@@ -1,0 +1,22 @@
+AC_INIT([amhello], [1.0], [bug-automake@gnu.org])
+AC_CONFIG_AUX_DIR([build])
+AM_INIT_AUTOMAKE([1.14.1 subdir-objects foreign])
+AC_PROG_CXX
+AC_PROG_CC
+#AC_PROG_AR
+
+AC_PROG_AWK
+AC_PROG_CPP
+AC_PROG_INSTALL
+AC_PROG_LN_S
+AC_PROG_MAKE_SET
+AC_PROG_RANLIB
+
+AC_HEADER_STDC
+AC_HEADER_DIRENT
+AC_CONFIG_FILES([
+ Makefile
+ ipc/Makefile
+ vap/Makefile
+])
+AC_OUTPUT
