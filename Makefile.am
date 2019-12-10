@@ -1,3 +1,3 @@
-SUBDIRS = ipc vap
-ACLOCAL_AMFLAGS = -I m4
+SUBDIRS = ipc vap vtysh
+ACLOCAL_AMFLAGS = -Im4
 EXTRA_DIST = autogen.sh

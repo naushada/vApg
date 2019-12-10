@@ -18,5 +18,6 @@ AC_CONFIG_FILES([
  Makefile
  ipc/Makefile
  vap/Makefile
+ vtysh/Makefile
 ])
 AC_OUTPUT
