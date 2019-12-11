@@ -99,6 +99,10 @@ void ReadlineIF::prompt(char *prompt)
  */
 char *ReadlineIF::prompt()
 {
+  if(NULL == m_prompt)
+  {
+    m_prompt = strdup("(Bismillah)% ");
+  }
   return(m_prompt);
 }
 
