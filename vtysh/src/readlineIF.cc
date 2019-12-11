@@ -26,7 +26,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <readline/readline.h>
 #include <readline/history.h>
 
-#include "vtysh.h"
+#include <ace/Reactor.h>
+#include <ace/Basic_Types.h>
+#include <ace/Event_Handler.h>
+#include <ace/Task.h>
+#include <ace/INET_Addr.h>
+#include <ace/UNIX_Addr.h>
+#include <ace/SOCK_Dgram.h>
+#include <ace/LSOCK_CODgram.h>
+#include <ace/LSOCK_Dgram.h>
+#include <ace/Task_T.h>
+#include <ace/UNIX_Addr.h>
+
+#include "readlineIF.h"
 
 /*These are static data member*/
 int ReadlineIF::m_offset = 0;
@@ -242,12 +254,14 @@ ReadlineIF::~ReadlineIF()
   delete m_prompt;
   /*set to default - NULL*/
   m_prompt = NULL;
+  m_vtysh = NULL;
 }
 
-ReadlineIF::ReadlineIF()
+ReadlineIF::ReadlineIF(Vtysh *inst)
 {
   m_prompt         = NULL;
   m_continueStatus = false;
+  m_vtysh = inst;
 }
 
 /* Look up NAME as the name of a command, and return a pointer to that
@@ -415,6 +429,49 @@ int ReadlineIF::processCommand(char *cmd, int len)
 int ReadlineIF::processResponse(char *rsp, int len)
 {
   return(0);
+}
+
+int ReadlineIF::start(void)
+{
+  char *line = NULL;
+  char *s = NULL;
+
+  /* Loop reading and executing lines until the user quits. */
+  for( ; !continueStatus(); )
+  {
+    line = readline(prompt());
+
+    if(!line)
+      break;
+
+    /* Remove leading and trailing whitespace from the line.
+       Then, if there is anything left, add it to the history list
+       and execute it. */
+    s = stripwhite(line);
+
+    if(*s)
+    {
+      add_history(s);
+      if(!executeLine(s))
+      {
+        /*Send this command to hostapd via control interface.*/
+        if(-1 == vtysh()->transmit(s))
+        {
+          ACE_ERROR((LM_ERROR, "Send to Hostapd Failed\n"));
+        }
+      }
+    }
+
+    free (line);
+  }
+
+  exit(0); 
+
+}
+
+Vtysh *ReadlineIF::vtysh(void)
+{
+  return(m_vtysh);
 }
 
 #endif

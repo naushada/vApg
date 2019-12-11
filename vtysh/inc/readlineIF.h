@@ -23,6 +23,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <readline/readline.h>
 #include <readline/history.h>
 
+#include "vtysh.h"
+
+
 class ReadlineIF
 {
   public:
@@ -41,7 +44,7 @@ class ReadlineIF
     static int m_argOffset;
 
   public:
-    ReadlineIF();
+    ReadlineIF(Vtysh *inst);
     virtual ~ReadlineIF();
     int init(void);
 
@@ -64,9 +67,13 @@ class ReadlineIF
     static void cmdName(char *cmdName);
     static char *cmdName(void);
 
+    int start(void);
+    Vtysh *vtysh(void);
+
   private:
     char        *m_prompt;
     bool        m_continueStatus;
+    Vtysh       *m_vtysh;
 };
 
 

@@ -29,26 +29,28 @@ Vtysh::~Vtysh()
 
 }
 
-Vtysh::Vtysh()
+Vtysh::Vtysh(ACE_Thread_Manager *thrMgr) : ACE_Task<ACE_MT_SYNCH>(thrMgr)
 {
   do
   {
-    if(-1 == m_unixAddr.set("/tmp/vtysh/ctrlIF"))
+    if(-1 == m_unixAddr.set("/var/run/vtysh/ctrlIF"))
     {
       ACE_ERROR((LM_ERROR, "Setting of Address Failed\n"));
+      perror("Socket Creation Failed:");
       break;
     }
 
-    #ifdef DEBUG
+
     ACE_OS::unlink(m_unixAddr.get_path_name());
     struct sockaddr_un *ss = (struct sockaddr_un *)m_unixAddr.get_addr();
     ACE_DEBUG((LM_DEBUG, "family %d path %s\n", ss->sun_family, ss->sun_path));
-    #endif
+
 
     ACE_OS::unlink(m_unixAddr.get_path_name());
-    if(-1 == m_unixDgram.open(m_unixAddr, PF_UNIX))
+    if(-1 == m_unixDgram.open(m_unixAddr))
     {
-      ACE_ERROR((LM_ERROR,"Unix Socket Creation Failed\n"));
+      ACE_ERROR((LM_ERROR,"Unix Socket Creation Failed for File %s\n", m_unixAddr.get_path_name()));
+      perror("Socket Creation Failed:");
       break;
     }
 
@@ -162,8 +164,44 @@ int Vtysh::transmit(char *command)
   return(0);
 }
 
+int Vtysh::open(void *args)
+{
+  /*Make this object as an Active Object.*/
+  activate(THR_NEW_LWP);
+  return(0);
+}
+
+int Vtysh::svc(void)
+{
+  /*! Time Out Value of 1sec.*/
+  ACE_Time_Value to(1,0);
+  while(1)
+  {
+    if(-1 == ACE_Reactor::instance()->handle_events(to))
+    {
+      ACE_ERROR((LM_ERROR, "handle_events failed\n"));
+      break;
+    }
+  }
+  return(0);
+}
+
 int main()
 {
+  Vtysh *vtysh = new Vtysh(ACE_Thread_Manager::instance());
+  ReadlineIF *rdIF = new ReadlineIF(vtysh);
+
+  /*! Make vtysh object as Active Object*/
+  vtysh->open(0);
+
+  /*!Initialize the readline Interface.*/
+  rdIF->init();
+  /*! Start Accepting Command/Request */
+  rdIF->start();
+
+  delete vtysh;
+  delete rdIF;
+
   return(0);
 }
 #endif
