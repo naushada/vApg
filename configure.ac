@@ -1,5 +1,5 @@
-AC_INIT([amhello], [1.0], [bug-automake@gnu.org])
-AC_CONFIG_AUX_DIR([build])
+AC_INIT([vAPG], [1.0], [naushad.dln@gmail.com])
+AC_CONFIG_AUX_DIR([auxdir])
 AM_INIT_AUTOMAKE([1.14.1 subdir-objects foreign])
 AC_PROG_CXX
 AC_PROG_CC

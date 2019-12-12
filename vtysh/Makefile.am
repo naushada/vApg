@@ -1,5 +1,5 @@
 
-bin_PROGRAMS =vtysh 
+bin_PROGRAMS =vtysh
 
 vtysh_SOURCES = src/readlineIF.cc \
 								src/vtysh.cc

@@ -33,18 +33,18 @@ Vtysh::Vtysh(ACE_Thread_Manager *thrMgr) : ACE_Task<ACE_MT_SYNCH>(thrMgr)
 {
   do
   {
-    if(-1 == m_unixAddr.set("/var/run/vtysh/ctrlIF"))
+    if(-1 == m_unixAddr.set(".ctrlIF"))
     {
       ACE_ERROR((LM_ERROR, "Setting of Address Failed\n"));
       perror("Socket Creation Failed:");
       break;
     }
 
-
+#ifdef DEBUG
     ACE_OS::unlink(m_unixAddr.get_path_name());
     struct sockaddr_un *ss = (struct sockaddr_un *)m_unixAddr.get_addr();
     ACE_DEBUG((LM_DEBUG, "family %d path %s\n", ss->sun_family, ss->sun_path));
-
+#endif
 
     ACE_OS::unlink(m_unixAddr.get_path_name());
     if(-1 == m_unixDgram.open(m_unixAddr))
@@ -78,6 +78,7 @@ ACE_HANDLE Vtysh::get_handle(void) const
 
 ACE_HANDLE Vtysh::handle(void)
 {
+  ACE_DEBUG((LM_INFO, "The handle is %d\n", m_handle));
   return(m_handle);
 }
 
@@ -89,6 +90,7 @@ void Vtysh::handle(ACE_HANDLE handle)
 
 int Vtysh::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask mask)
 {
+  ACE_DEBUG((LM_DEBUG, "handle_close is invoked\n"));
   return(0);
 }
 
@@ -116,6 +118,7 @@ int Vtysh::handle_input(ACE_HANDLE handle)
   char buff[1024];
   size_t len = sizeof(buff);
 
+  ACE_DEBUG((LM_DEBUG, "handle_input is called\n"));
   memset((void *)buff, 0, sizeof(buff));
   ACE_Reactor::instance()->cancel_timer(this->m_rspTimerId);
 
@@ -155,7 +158,7 @@ int Vtysh::transmit(char *command)
     }
 
     /*Start Response Guard Timer now.*/
-    ACE_Time_Value to(1, 0);
+    ACE_Time_Value to(2, 0);
     ACE_Time_Value interval = ACE_Time_Value::zero;
     m_rspTimerId = ACE_Reactor::instance()->schedule_timer(this, NULL, to, interval);
 
@@ -174,16 +177,17 @@ int Vtysh::open(void *args)
 int Vtysh::svc(void)
 {
   /*! Time Out Value of 1sec.*/
-  ACE_Time_Value to(1,0);
+  ACE_Time_Value to(2,0);
   while(1)
   {
     if(-1 == ACE_Reactor::instance()->handle_events(to))
     {
       ACE_ERROR((LM_ERROR, "handle_events failed\n"));
+      perror("handle_events failed with reason:");
       break;
     }
   }
-  return(0);
+  return(-1);
 }
 
 int main()
@@ -191,12 +195,13 @@ int main()
   Vtysh *vtysh = new Vtysh(ACE_Thread_Manager::instance());
   ReadlineIF *rdIF = new ReadlineIF(vtysh);
 
-  /*! Make vtysh object as Active Object*/
-  vtysh->open(0);
-
   /*!Initialize the readline Interface.*/
   rdIF->init();
+
+  /*! Make vtysh object as Active Object*/
+  vtysh->open(0);
   /*! Start Accepting Command/Request */
+
   rdIF->start();
 
   delete vtysh;
