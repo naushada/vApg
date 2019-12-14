@@ -55,12 +55,6 @@ Vtysh::Vtysh(ACE_Thread_Manager *thrMgr) : ACE_Task<ACE_MT_SYNCH>(thrMgr)
     }
 
     handle(m_unixDgram.get_handle());
-    /*Note: Right after registering handler, ACE Framework calls get_handle
-            to retrieve the handle. The handle is nothing but a fd
-            (File Descriptor).*/
-    ACE_Reactor::instance()->register_handler(this,
-					ACE_Event_Handler::READ_MASK |
-					ACE_Event_Handler::TIMER_MASK);
 
   }while(0);
 }
@@ -176,8 +170,15 @@ int Vtysh::open(void *args)
 
 int Vtysh::svc(void)
 {
+  /*Note: Right after registering handler, ACE Framework calls get_handle
+          to retrieve the handle. The handle is nothing but a fd
+          (File Descriptor).*/
+  ACE_Reactor::instance()->register_handler(this,
+                                            ACE_Event_Handler::READ_MASK |
+                                            ACE_Event_Handler::TIMER_MASK);
   /*! Time Out Value of 1sec.*/
   ACE_Time_Value to(2,0);
+
   while(1)
   {
     if(-1 == ACE_Reactor::instance()->handle_events(to))
