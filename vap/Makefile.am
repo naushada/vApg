@@ -8,13 +8,11 @@ vAPG_SOURCES = src/vap.cc \
 vAPG_CPPFLAGS=-I$(srcdir)/inc \
               -I$(top_srcdir)/ipc/inc \
               -I/usr/local \
-              -I/usr/local/ACE-6.5.0/include \
-              -I/home/naushada/sw-packages/ACE_wrappers
+              -I/usr/local/ACE-6.5.0/include
 
 vAPG_CXXFLAGS=-g -Wall -std=gnu++11
 
 vAPG_LDFLAGS=-L/usr/local/ACE-6.5.0/lib \
-             -L/home/naushada/sw-packages/ACE_wrappers/ace \
              -L$(CURDIR)/../ipc
 
 vAPG_LDADD=-lACE -lreadline -lpthread -ltinfo -lipc

@@ -6,8 +6,7 @@ libipc_a_SOURCES = src/ipc.cc
 
 libipc_a_CPPFLAGS=-I$(srcdir)/inc \
                   -I/usr/local \
-                  -I/usr/local/ACE-6.5.0/include \
-                  -I/home/naushada/sw-packages/ACE_wrappers
+                  -I/usr/local/ACE-6.5.0/include
 
 libipc_a_CXXFLAGS=-g -Wall -std=gnu++11
 
