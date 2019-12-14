@@ -1,6 +1,7 @@
 #ifndef __IPC_H__
 #define __IPC_H__
 
+#include <cstdio>
 #include <unordered_map>
 #include <list>
 
