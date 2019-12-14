@@ -258,14 +258,14 @@ ReadlineIF::~ReadlineIF()
   delete m_prompt;
   /*set to default - NULL*/
   m_prompt = NULL;
-  m_vtysh = NULL;
+  m_vtyshCtrlIF = NULL;
 }
 
-ReadlineIF::ReadlineIF(Vtysh *inst)
+ReadlineIF::ReadlineIF(VtyshCtrlIF *inst)
 {
   m_prompt         = NULL;
   m_continueStatus = false;
-  m_vtysh = inst;
+  m_vtyshCtrlIF = inst;
 }
 
 /* Look up NAME as the name of a command, and return a pointer to that
@@ -459,7 +459,7 @@ int ReadlineIF::start(void)
       if(!executeLine(s))
       {
         /*Send this command to hostapd via control interface.*/
-        if(-1 == vtysh()->transmit(s))
+        if(-1 == vtyshCtrlIF()->transmit(s))
         {
           ACE_ERROR((LM_ERROR, "Send to Hostapd Failed\n"));
         }
@@ -469,13 +469,13 @@ int ReadlineIF::start(void)
     free (line);
   }
 
-  exit(0); 
+  exit(0);
 
 }
 
-Vtysh *ReadlineIF::vtysh(void)
+VtyshCtrlIF *ReadlineIF::vtyshCtrlIF(void)
 {
-  return(m_vtysh);
+  return(m_vtyshCtrlIF);
 }
 
 #endif

@@ -32,18 +32,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <ace/Task_T.h>
 #include <ace/UNIX_Addr.h>
 
-class Vtysh : public ACE_Task<ACE_MT_SYNCH>
+class VtyshCtrlIF : public ACE_Task<ACE_MT_SYNCH>
 {
+
   public:
     void handle(ACE_HANDLE handle);
     ACE_HANDLE handle(void);
     int main(int argc, char *argv[]);
     int transmit(char *command);
-    Vtysh(ACE_Thread_Manager *thrMgr);
-    virtual ~Vtysh();
 
-    virtual int open(void *args=0);
-    virtual int svc(void);
+    VtyshCtrlIF(ACE_Thread_Manager *thrMgr);
+    virtual ~VtyshCtrlIF();
 
     virtual int handle_input(ACE_HANDLE handle = ACE_INVALID_HANDLE);
     virtual int handle_close(ACE_HANDLE handle, ACE_Reactor_Mask mask);
@@ -55,6 +54,19 @@ class Vtysh : public ACE_Task<ACE_MT_SYNCH>
     ACE_UNIX_Addr    m_unixAddr;
     ACE_LSOCK_Dgram  m_unixDgram;
     long             m_rspTimerId;
+};
+
+
+class VtyshTask : public VtyshCtrlIF
+{
+  public:
+    VtyshTask(ACE_Thread_Manager *thrMgr);
+    virtual ~VtyshTask();
+
+    virtual int open(void *args=0);
+    virtual int svc(void);
+
+  private:
 };
 
 

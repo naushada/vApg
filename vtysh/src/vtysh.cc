@@ -21,15 +21,15 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "readlineIF.h"
 #include "vtysh.h"
 
-Vtysh::~Vtysh()
+VtyshCtrlIF::~VtyshCtrlIF()
 {
 
 }
 
-Vtysh::Vtysh(ACE_Thread_Manager *thrMgr) : ACE_Task<ACE_MT_SYNCH>(thrMgr)
+VtyshCtrlIF::VtyshCtrlIF(ACE_Thread_Manager *thrMgr) :
+  ACE_Task<ACE_MT_SYNCH>(thrMgr)
 {
   do
   {
@@ -58,9 +58,9 @@ Vtysh::Vtysh(ACE_Thread_Manager *thrMgr) : ACE_Task<ACE_MT_SYNCH>(thrMgr)
     /*Note: Right after registering handler, ACE Framework calls get_handle
             to retrieve the handle. The handle is nothing but a fd
             (File Descriptor).*/
-    ACE_Reactor::instance()->register_handler(this,
-					ACE_Event_Handler::READ_MASK |
-					ACE_Event_Handler::TIMER_MASK);
+    //ACE_Reactor::instance()->register_handler(this,
+		//			ACE_Event_Handler::READ_MASK |
+		//			ACE_Event_Handler::TIMER_MASK);
 
   }while(0);
 }
@@ -71,24 +71,24 @@ Vtysh::Vtysh(ACE_Thread_Manager *thrMgr) : ACE_Task<ACE_MT_SYNCH>(thrMgr)
  * @param  none
  * @return handle of type ACE_HANDLE
  */
-ACE_HANDLE Vtysh::get_handle(void) const
+ACE_HANDLE VtyshCtrlIF::get_handle(void) const
 {
-  return(const_cast<Vtysh *>(this)->handle());
+  return(const_cast<VtyshCtrlIF *>(this)->handle());
 }
 
-ACE_HANDLE Vtysh::handle(void)
+ACE_HANDLE VtyshCtrlIF::handle(void)
 {
   ACE_DEBUG((LM_INFO, "The handle is %d\n", m_handle));
   return(m_handle);
 }
 
-void Vtysh::handle(ACE_HANDLE handle)
+void VtyshCtrlIF::handle(ACE_HANDLE handle)
 {
   m_handle = handle;
 }
 
 
-int Vtysh::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask mask)
+int VtyshCtrlIF::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask mask)
 {
   ACE_DEBUG((LM_DEBUG, "handle_close is invoked\n"));
   return(0);
@@ -101,7 +101,7 @@ int Vtysh::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask mask)
  * @param  argument which was passed while starting the timer.
  * @return 0 for success else for failure.
  */
-int Vtysh::handle_timeout(const ACE_Time_Value &tv, const void *arg)
+int VtyshCtrlIF::handle_timeout(const ACE_Time_Value &tv, const void *arg)
 {
   ACE_DEBUG((LM_DEBUG, "Time is expired now\n"));
   return(0);
@@ -113,13 +113,15 @@ int Vtysh::handle_timeout(const ACE_Time_Value &tv, const void *arg)
  * @param  handle in which read/recv/recvfrom to be called.
  * @return 0 for success else for failure.
  */
-int Vtysh::handle_input(ACE_HANDLE handle)
+int VtyshCtrlIF::handle_input(ACE_HANDLE handle)
 {
   char buff[1024];
   size_t len = sizeof(buff);
 
   ACE_DEBUG((LM_DEBUG, "handle_input is called\n"));
   memset((void *)buff, 0, sizeof(buff));
+
+  /*! Stop the running timer now.*/
   ACE_Reactor::instance()->cancel_timer(this->m_rspTimerId);
 
   /*UNIX socket for IPC.*/
@@ -136,7 +138,7 @@ int Vtysh::handle_input(ACE_HANDLE handle)
 }
 
 
-int Vtysh::transmit(char *command)
+int VtyshCtrlIF::transmit(char *command)
 {
   do
   {
@@ -167,17 +169,45 @@ int Vtysh::transmit(char *command)
   return(0);
 }
 
-int Vtysh::open(void *args)
+
+
+/*========================================================================*/
+/* VtyshTask Member Function's Definition.
+ * =======================================================================*/
+
+VtyshTask::VtyshTask(ACE_Thread_Manager *thrMgr) : VtyshCtrlIF(thrMgr)
+{
+
+}
+
+VtyshTask::~VtyshTask()
+{
+
+}
+
+int VtyshTask::open(void *args)
 {
   /*Make this object as an Active Object.*/
   activate(THR_NEW_LWP);
   return(0);
 }
 
-int Vtysh::svc(void)
+int VtyshTask::svc(void)
 {
   /*! Time Out Value of 1sec.*/
-  ACE_Time_Value to(2,0);
+  ACE_Time_Value to(2, 0);
+
+    ACE_Reactor::instance()->register_handler(this,
+					ACE_Event_Handler::READ_MASK |
+					ACE_Event_Handler::TIMER_MASK);
+
+  if(ACE_Reactor::instance()->initialized())
+  {
+    ACE_DEBUG((LM_DEBUG, "Reactor is initialized\n"));
+  }
+
+  //ACE_Reactor::instance()->dump();
+
   while(1)
   {
     if(-1 == ACE_Reactor::instance()->handle_events(to))
@@ -190,23 +220,5 @@ int Vtysh::svc(void)
   return(-1);
 }
 
-int main()
-{
-  Vtysh *vtysh = new Vtysh(ACE_Thread_Manager::instance());
-  ReadlineIF *rdIF = new ReadlineIF(vtysh);
 
-  /*!Initialize the readline Interface.*/
-  rdIF->init();
-
-  /*! Make vtysh object as Active Object*/
-  vtysh->open(0);
-  /*! Start Accepting Command/Request */
-
-  rdIF->start();
-
-  delete vtysh;
-  delete rdIF;
-
-  return(0);
-}
 #endif
