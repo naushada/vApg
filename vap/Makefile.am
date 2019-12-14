@@ -3,16 +3,18 @@
 bin_PROGRAMS = vAPG
 
 vAPG_SOURCES = src/vap.cc \
-						   inc/vap.h
+               inc/vap.h
 
 vAPG_CPPFLAGS=-I$(srcdir)/inc \
-							-I$(top_srcdir)/ipc/inc \
-         		  -I/usr/local \
-         		  -I/usr/local/ACE-6.5.0/include
+              -I$(top_srcdir)/ipc/inc \
+              -I/usr/local \
+              -I/usr/local/ACE-6.5.0/include \
+              -I/home/naushada/sw-packages/ACE_wrappers
 
-vAPG_CFLAGS=-g -Wall
+vAPG_CXXFLAGS=-g -Wall -std=gnu++11
 
 vAPG_LDFLAGS=-L/usr/local/ACE-6.5.0/lib \
-						 -L$(CURDIR)/../ipc
+             -L/home/naushada/sw-packages/ACE_wrappers/ace \
+             -L$(CURDIR)/../ipc
 
 vAPG_LDADD=-lACE -lreadline -lpthread -ltinfo -lipc

@@ -176,6 +176,11 @@ void CtrlIF::parseSetParam(char *req)
 
 }
 
+CtrlIF::~CtrlIF()
+{
+
+}
+
 /** @brief This function sets the provided ip address and subnet mask to the interface
  *
  *  @param interface_name is the eth name
@@ -596,7 +601,7 @@ int Vap::handle_close(ACE_HANDLE fd, ACE_Reactor_Mask mask)
 
 int main(int argc, char *argv[])
 {
-  Vap pVap = new Vap(ACE_Thread_Manager::instance())
+  //Vap pVap = new Vap(ACE_Thread_Manager::instance())
   return(0);
 }
 #endif /* __VAP_CC__ */

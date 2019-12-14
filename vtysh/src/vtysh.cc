@@ -55,12 +55,15 @@ VtyshCtrlIF::VtyshCtrlIF(ACE_Thread_Manager *thrMgr) :
     }
 
     handle(m_unixDgram.get_handle());
+<<<<<<< HEAD
     /*Note: Right after registering handler, ACE Framework calls get_handle
             to retrieve the handle. The handle is nothing but a fd
             (File Descriptor).*/
     //ACE_Reactor::instance()->register_handler(this,
 		//			ACE_Event_Handler::READ_MASK |
 		//			ACE_Event_Handler::TIMER_MASK);
+=======
+>>>>>>> 5710e88f3e17c17b828e7837d2cd4955ff1a5647
 
   }while(0);
 }
@@ -194,19 +197,14 @@ int VtyshTask::open(void *args)
 
 int VtyshTask::svc(void)
 {
+  /*Note: Right after registering handler, ACE Framework calls get_handle
+          to retrieve the handle. The handle is nothing but a fd
+          (File Descriptor).*/
+  ACE_Reactor::instance()->register_handler(this,
+                                            ACE_Event_Handler::READ_MASK |
+                                            ACE_Event_Handler::TIMER_MASK);
   /*! Time Out Value of 1sec.*/
-  ACE_Time_Value to(2, 0);
-
-    ACE_Reactor::instance()->register_handler(this,
-					ACE_Event_Handler::READ_MASK |
-					ACE_Event_Handler::TIMER_MASK);
-
-  if(ACE_Reactor::instance()->initialized())
-  {
-    ACE_DEBUG((LM_DEBUG, "Reactor is initialized\n"));
-  }
-
-  //ACE_Reactor::instance()->dump();
+  ACE_Time_Value to(1,0);
 
   while(1)
   {
