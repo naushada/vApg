@@ -55,15 +55,12 @@ VtyshCtrlIF::VtyshCtrlIF(ACE_Thread_Manager *thrMgr) :
     }
 
     handle(m_unixDgram.get_handle());
-<<<<<<< HEAD
     /*Note: Right after registering handler, ACE Framework calls get_handle
             to retrieve the handle. The handle is nothing but a fd
             (File Descriptor).*/
-    //ACE_Reactor::instance()->register_handler(this,
-		//			ACE_Event_Handler::READ_MASK |
-		//			ACE_Event_Handler::TIMER_MASK);
-=======
->>>>>>> 5710e88f3e17c17b828e7837d2cd4955ff1a5647
+    ACE_Reactor::instance()->register_handler(this,
+					ACE_Event_Handler::READ_MASK |
+					ACE_Event_Handler::TIMER_MASK);
 
   }while(0);
 }

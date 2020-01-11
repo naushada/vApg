@@ -96,7 +96,7 @@ int CtrlIF::handle_input(ACE_HANDLE handle)
     ACE_DEBUG((LM_DEBUG, "%s", buff));
     processCtrlIFReq(buff, recv_len);
 
-    if(-1 == m_unixDgram.send("OK", 2, peer) < 0)
+    if(-1 == m_unixDgram.send("OK", 2, peer))
     {
       ACE_ERROR((LM_ERROR, "Send to Peer Failed\n"));
       break;
@@ -199,7 +199,7 @@ ACE_INT32 Vap::setIpAddr(ACE_CString &interface_name,
   fd = socket(AF_INET, SOCK_DGRAM, 0);
 
   memset((void *)&ifr, 0, sizeof(struct ifreq));
-  strncpy((char *)ifr.ifr_name, (const char *)interface_name.rep(), IFNAMSIZ);
+  strncpy((char *)ifr.ifr_name, (const char *)interface_name.rep(), IFNAMSIZ - 1);
 
   ifr.ifr_addr.sa_family = AF_INET;
   ifr.ifr_dstaddr.sa_family = AF_INET;
@@ -269,7 +269,7 @@ ACE_INT32 Vap::openInterface(void)
   struct packet_mreq mr;
 
   memset((void *)&ifr, 0, sizeof(ifr));
-  strncpy((char *)ifr.ifr_name, (const char *)(intfName().rep()), IFNAMSIZ);
+  strncpy((char *)ifr.ifr_name, (const char *)(intfName().rep()), IFNAMSIZ - 1);
 
   if(ioctl(fd, SIOCGIFFLAGS, &ifr) == -1)
   {
@@ -412,7 +412,7 @@ ACE_INT32 Vap::init(void)
   memset((void *)&ifr, 0, sizeof(struct ifreq));
 
   ifr.ifr_addr.sa_family = AF_INET;
-  strncpy(ifr.ifr_name, intfName().rep(), IFNAMSIZ);
+  strncpy(ifr.ifr_name, intfName().rep(), IFNAMSIZ - 1);
 
   fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
