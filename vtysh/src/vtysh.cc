@@ -35,32 +35,25 @@ VtyshCtrlIF::VtyshCtrlIF(ACE_Thread_Manager *thrMgr) :
   {
     if(-1 == m_unixAddr.set(".ctrlIF"))
     {
-      ACE_ERROR((LM_ERROR, "Setting of Address Failed\n"));
-      perror("Socket Creation Failed:");
+      /*%m is to print perror log*/
+      ACE_ERROR((LM_ERROR, ACE_TEXT("%D %M %N:%l Setting of Address Failed : %m\n")));
       break;
     }
 
 #ifdef DEBUG
     ACE_OS::unlink(m_unixAddr.get_path_name());
     struct sockaddr_un *ss = (struct sockaddr_un *)m_unixAddr.get_addr();
-    ACE_DEBUG((LM_DEBUG, "family %d path %s\n", ss->sun_family, ss->sun_path));
+    ACE_DEBUG((LM_DEBUG, ACE_TEXT("%D %M %N:%l family %d path %s\n"), ss->sun_family, ss->sun_path));
 #endif
 
     ACE_OS::unlink(m_unixAddr.get_path_name());
     if(-1 == m_unixDgram.open(m_unixAddr))
     {
-      ACE_ERROR((LM_ERROR,"Unix Socket Creation Failed for File %s\n", m_unixAddr.get_path_name()));
-      perror("Socket Creation Failed:");
+      ACE_ERROR((LM_ERROR,ACE_TEXT("%D %M %N:%l Unix Socket Creation Failed for File %s : %m\n"), m_unixAddr.get_path_name()));
       break;
     }
 
     handle(m_unixDgram.get_handle());
-    /*Note: Right after registering handler, ACE Framework calls get_handle
-            to retrieve the handle. The handle is nothing but a fd
-            (File Descriptor).*/
-    //ACE_Reactor::instance()->register_handler(this,
-		//			ACE_Event_Handler::READ_MASK |
-		//			ACE_Event_Handler::TIMER_MASK);
 
   }while(0);
 }
@@ -90,7 +83,7 @@ void VtyshCtrlIF::handle(ACE_HANDLE handle)
 
 int VtyshCtrlIF::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask mask)
 {
-  ACE_DEBUG((LM_DEBUG, "handle_close is invoked\n"));
+  ACE_DEBUG((LM_DEBUG, ACE_TEXT("%D %M %N:%l handle_close is invoked\n")));
   return(0);
 }
 
@@ -103,7 +96,7 @@ int VtyshCtrlIF::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask mask)
  */
 int VtyshCtrlIF::handle_timeout(const ACE_Time_Value &tv, const void *arg)
 {
-  ACE_DEBUG((LM_DEBUG, "Time is expired now\n"));
+  ACE_DEBUG((LM_DEBUG, ACE_TEXT("%D %M %N:%l Time is expired now\n")));
   return(0);
 }
 
@@ -127,25 +120,35 @@ int VtyshCtrlIF::handle_input(ACE_HANDLE handle)
   /*UNIX socket for IPC.*/
   ACE_UNIX_Addr peer;
   int recv_len = -1;
-  if((recv_len = m_unixDgram.recv(buff, len, peer)) < 0)
+  int ret = -1;
+
+  do
   {
-    ACE_ERROR((LM_ERROR, "Receive from peer failed\n"));
-  }
+    if((recv_len = m_unixDgram.recv(buff, len, peer)) < 0)
+    {
+      ACE_ERROR((LM_ERROR, ACE_TEXT("%D %M %N:%l Receive from peer failed: %m\n")));
+      break;
+    }
 
-  ACE_DEBUG((LM_DEBUG, "%s", buff));
+    ACE_DEBUG((LM_DEBUG, ACE_TEXT("%D %M %N:%l %s"), buff));
+    ret = 0;
 
-  return(0);
+  }while(0);
+
+  return(ret);
 }
 
 
 int VtyshCtrlIF::transmit(char *command)
 {
+  int ret = -1;
+
   do
   {
     size_t len = -1;
     if(!command)
     {
-      ACE_ERROR((LM_ERROR, "Command can't be transmitted because it's NULL\n"));
+      ACE_ERROR((LM_ERROR, ACE_TEXT("%D %M %N:%l Command can't be transmitted because it's NULL\n")));
       break;
     }
 
@@ -155,7 +158,7 @@ int VtyshCtrlIF::transmit(char *command)
     ACE_UNIX_Addr peer("/var/run/vapgCtrl");
     if(m_unixDgram.send(command, len, peer) < 0)
     {
-      ACE_ERROR((LM_ERROR, ACE_TEXT("Sending of command len %d (%s) failed with reason %m\n"), strlen(command), command));
+      ACE_ERROR((LM_ERROR, ACE_TEXT("%D %M %N:%l Sending of command len %d (%s) failed with reason %m\n"), strlen(command), command));
       break;
     }
 
@@ -163,10 +166,11 @@ int VtyshCtrlIF::transmit(char *command)
     ACE_Time_Value to(2, 0);
     ACE_Time_Value interval = ACE_Time_Value::zero;
     m_rspTimerId = ACE_Reactor::instance()->schedule_timer(this, NULL, to, interval);
+    ret = 0;
 
   }while(0);
 
-  return(0);
+  return(ret);
 }
 
 
@@ -207,7 +211,7 @@ int VtyshTask::svc(void)
   {
     if(-1 == ACE_Reactor::instance()->handle_events(to))
     {
-      ACE_ERROR((LM_ERROR, ACE_TEXT("handle_events failed :%m\n")));
+      ACE_ERROR((LM_ERROR, ACE_TEXT("%D %M %N:%l handle_events failed :%m\n")));
       break;
     }
   }

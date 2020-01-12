@@ -279,7 +279,7 @@ bool ReadlineIF::isValid(char *cmd)
   {
     for(i = 0; ReadlineIF::m_command[i].cmd; i++)
     {
-      if(cmd && strcmp(cmd, ReadlineIF::m_command[i].cmd) == 0)
+      if(cmd && !strcmp(cmd, ReadlineIF::m_command[i].cmd))
       {
         result = true;
         break;
@@ -338,20 +338,13 @@ int ReadlineIF::executeLine(char *req)
 
   do
   {
-    if(!isFound)
-    {
-      ACE_ERROR((LM_ERROR, "%s: No such command.\n", cmd));
-      help(cmd);
-      /*bypass the following statement.*/
-      break;
-    }
-
     if(!strncmp(cmd, "help", 4) || (!strncmp(cmd, "?", 1)))
     {
       help(cmd);
     }
-    else if(!strncmp(cmd, "quit", 4))
+    else if((!strncmp(cmd, "quit", 4)) || (!strncmp(cmd, "q", 1)))
     {
+      ACE_DEBUG((LM_INFO, "The cmd is %s\n", cmd));
       quit();
     }
     else
@@ -359,6 +352,14 @@ int ReadlineIF::executeLine(char *req)
       /* Call the function. */
       //processCommand(origLine, strlen(origLine));
       status = 0;
+
+      if(!isFound)
+      {
+        ACE_ERROR((LM_ERROR, "%s: No such command.\n", cmd));
+        help(cmd);
+        /*bypass the following statement.*/
+        break;
+      }
     }
 
   }while(0);
@@ -426,7 +427,7 @@ bool ReadlineIF::continueStatus(void)
 
 int ReadlineIF::processCommand(char *cmd, int len)
 {
-  ACE_DEBUG((LM_DEBUG, "The Command is %s\n", cmd));
+  ACE_DEBUG((LM_DEBUG, ACE_TEXT("%D %M %N:%l The Command is %s\n"), cmd));
   return(0);
 }
 
@@ -458,10 +459,10 @@ int ReadlineIF::start(void)
       add_history(s);
       if(!executeLine(s))
       {
-        /*Send this command to hostapd via control interface.*/
+        /*Send this command to vAPG via control interface.*/
         if(-1 == vtyshCtrlIF()->transmit(s))
         {
-          ACE_ERROR((LM_ERROR, "Send to Hostapd Failed\n"));
+          ACE_ERROR((LM_ERROR, ACE_TEXT("%D %M %N:%l Send to vAPG Failed : %m\n")));
         }
       }
     }
