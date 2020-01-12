@@ -58,9 +58,9 @@ VtyshCtrlIF::VtyshCtrlIF(ACE_Thread_Manager *thrMgr) :
     /*Note: Right after registering handler, ACE Framework calls get_handle
             to retrieve the handle. The handle is nothing but a fd
             (File Descriptor).*/
-    ACE_Reactor::instance()->register_handler(this,
-					ACE_Event_Handler::READ_MASK |
-					ACE_Event_Handler::TIMER_MASK);
+    //ACE_Reactor::instance()->register_handler(this,
+		//			ACE_Event_Handler::READ_MASK |
+		//			ACE_Event_Handler::TIMER_MASK);
 
   }while(0);
 }
@@ -78,7 +78,7 @@ ACE_HANDLE VtyshCtrlIF::get_handle(void) const
 
 ACE_HANDLE VtyshCtrlIF::handle(void)
 {
-  ACE_DEBUG((LM_INFO, "The handle is %d\n", m_handle));
+  ACE_DEBUG((LM_INFO, ACE_TEXT("%D %M %N:%l The handle is %d\n"), m_handle));
   return(m_handle);
 }
 
@@ -95,7 +95,7 @@ int VtyshCtrlIF::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask mask)
 }
 
 /*
- * @brief  This is the hook method for application to process the timer expiry. This is invoked by 
+ * @brief  This is the hook method for application to process the timer expiry. This is invoked by
  *         ACE Framework upon expiry of timer.
  * @param  tv in sec and usec.
  * @param  argument which was passed while starting the timer.
@@ -108,7 +108,7 @@ int VtyshCtrlIF::handle_timeout(const ACE_Time_Value &tv, const void *arg)
 }
 
 /*
- * @brief  This is the hook method for application to define this member function and is invoked by 
+ * @brief  This is the hook method for application to define this member function and is invoked by
  *         ACE Framework.
  * @param  handle in which read/recv/recvfrom to be called.
  * @return 0 for success else for failure.
@@ -155,7 +155,7 @@ int VtyshCtrlIF::transmit(char *command)
     ACE_UNIX_Addr peer("/var/run/vapgCtrl");
     if(m_unixDgram.send(command, len, peer) < 0)
     {
-      ACE_ERROR((LM_ERROR, "Sending of command len %d (%s) failed\n", strlen(command), command));
+      ACE_ERROR((LM_ERROR, ACE_TEXT("Sending of command len %d (%s) failed with reason %m\n"), strlen(command), command));
       break;
     }
 
@@ -207,8 +207,7 @@ int VtyshTask::svc(void)
   {
     if(-1 == ACE_Reactor::instance()->handle_events(to))
     {
-      ACE_ERROR((LM_ERROR, "handle_events failed\n"));
-      perror("handle_events failed with reason:");
+      ACE_ERROR((LM_ERROR, ACE_TEXT("handle_events failed :%m\n")));
       break;
     }
   }
