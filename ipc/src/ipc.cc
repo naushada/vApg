@@ -14,26 +14,41 @@
 #include <ace/UNIX_Addr.h>
 #include <ace/Timer_Queue_T.h>
 
+#include "commonIF.h"
 #include "ipc.h"
 
 IPC_::~IPC_()
 {
+	m_magic = 0x00000000;
 }
 
 IPC_::IPC_()
 {
   m_magic = 0x00000000;
   m_handle = -1;
+  m_ipcAddr.set("");
+  m_container = 0;
+  m_component = 0;
+  m_facility = 0;
+  m_instance = 0;
+  m_ipcPort = 0;
+  m_ipAddr = 0;
+  m_taskIdToPeerUMap.clear();
 
 }
 
-IPC_::IPC_(char *ipAddr, ACE_UINT8 cont, ACE_UINT8 com,
-           ACE_UINT8 fac, ACE_UINT8 ins)
+IPC_::IPC_(const char *ipAddr, ACE_UINT8 cont, ACE_UINT8 com,
+           ACE_UINT8 fac, ACE_UINT8 ins, const char *nodeTag)
 {
   do
   {
 
     ACE_CString addr(ipAddr);
+    /*cont - container, com - component, fac - facility, ins - instance.*/
+    /*+---------+--------+--------+--------+
+     *| cont(1) | com(1) | fac(1) | ins(1) |
+     *+---------+--------+--------+--------+
+     * */
     ACE_UINT32 taskId = cont << 24 |
                         com  << 16 |
                         fac  << 8  |
@@ -61,7 +76,7 @@ IPC_::IPC_(char *ipAddr, ACE_UINT8 cont, ACE_UINT8 com,
 
   }while(0);
 
-}
+}/*IPC_*/
 
 void IPC_::ipcPort(ACE_UINT32 port)
 {
@@ -142,40 +157,110 @@ ACE_HANDLE IPC_::get_handle(void) const
  */
 ACE_INT32 IPC_::handle_input(ACE_HANDLE handle)
 {
-  char buff[1500];
-  size_t max_len = sizeof(buff);
+  ACE_Message_Block *mb;
   size_t recv_len = -1;
-  taskIdToPeerMapIter_t iter;
 
-  memset((void *)buff, 0, sizeof(buff));
+  ACE_NEW_RETURN(mb, ACE_Message_Block(CommonIF::SIZE_64MB), -1);
 
   /*UDP socket for IPC.*/
   ACE_INET_Addr peer;
   do
   {
-    if((recv_len = m_dgram.recv(buff, max_len, peer)) < 0)
+	  memset((void *)mb->rd_ptr(), 0, (CommonIF::SIZE_64M * sizeof(char)));
+    if((recv_len = m_dgram.recv(mb->rd_ptr(), (CommonIF::SIZE_64M * sizeof(char)), peer)) < 0)
     {
       ACE_ERROR((LM_ERROR, "Receive from peer 0x%X Failed\n", peer.get_port_number()));
       break;
     }
 
+    mb->rd_ptr(recv_len);
     /*! peer is remembered and shall be used while sending response to it.*/
 
-    /* +--------------+--------------+------------+-----------+-------------------+
-     * | srctaskId(4) | dstTaskId(4) | version(4) | length(4) | payload of length |
-     * +--------------+--------------+------------+-----------+-------------------+
+    /* +--------------+--------------+---------------+--------------+------------+-----------+-------------------+
+     * |dstProcId(4)  | dsttaskId(4) | srcProcId(4)  | srcTaskId(4) | version(4) | length(4) | payload of length |
+     * +--------------+--------------+---------------+--------------+------------+-----------+-------------------+
      * */
-    processRequest((ACE_UINT8 *)buff, recv_len);
+    handle_ipc((ACE_UINT8 *)mb->rd_ptr(), mb->length());
 
   }while(0);
 
   return(0);
 }
 
-ACE_UINT32 IPC_::getMyTaskId(void)
+ACE_UINT32 IPC_::get_self_procId(void)
+{
+	return(m_selfProcId);
+}
+
+void IPC_::selfProcId(ACE_UINT32 selfProcId)
+{
+	m_selfProcId = selfProcId;
+}
+
+void IPC_::nodeTag(const char *selfNodeTag)
+{
+	ACE_CString cs(selfNodeTag);
+	m_nodeTag = cs;
+}
+
+ACE_CString IPC_::nodeTag(void)
+{
+	return(m_nodeTag);
+}
+
+/*
+ * @brief
+ * @param dstProcId is the destination ProcId which is hash32 of processor ID/Node ID
+ * @param
+ * @param
+ * @param
+ * @return
+ * */
+ACE_UINT32 IPC_::send_ipc(ACE_UINT32 dstProcId, ACE_UINT8 dstEntity,
+		                  ACE_UINT8 dstInst, ACE_UINT8 *req,
+						  ACE_UINT32 reqLen, const char* ipAddr,
+						  ACE_UINT16 sendPort)
+{
+	ACE_Message_Block *mb;
+
+	do
+	{
+	  if(dstProcId == get_self_procId())
+	  {
+        /*data to be sent to different Node/Processor.*/
+	  }
+	}while(0);
+
+#if 0
+	ACE_UINT32 srcTaskId;
+    ACE_Addr peerAddr;
+
+    ACE_NEW_NORETURN(mb, ACE_Message_Block(IPC_RECV_SIZE_64M));
+
+    mb->wr_ptr() = *((ACE_UINT32 *)procId);
+    mb->wr_ptr(sizeof(ACE_UINT32));
+
+    mb->wr_ptr() = *((ACE_UINT32 *)&req[4]);
+    mb->wr_ptr(sizeof(ACE_UINT32));
+
+	dstProcId = *((ACE_UINT32 *)req);
+	dstTaskId = *((ACE_UINT32 *)&req[4]);
+#endif
+
+	return(reqLen);
+}
+
+
+ACE_UINT32 IPC_::get_self_taskId(void)
 {
   return(m_ipcPort);
 }
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ *
+ * Timer API definition
+ *
+ * ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
 /*
  * @brief  This is the hook method for application to process the timer expiry. This is invoked by
@@ -186,69 +271,38 @@ ACE_UINT32 IPC_::getMyTaskId(void)
  */
 ACE_INT32 Timer_::handle_timeout(ACE_Time_Value &tv, const void *arg)
 {
-  /*!Delete this entry from list*/
-  std::list<_timerToken_t *>::iterator it;
-
-  for(it = m_timerTokenList.begin(); it != m_timerTokenList.end(); it++)
-  {
-    _timerToken_t *tt = *it;
-    if(arg == tt->act())
-    {
-      /*! Remove this element from list.*/
-      m_timerTokenList.erase(it);
-      free(tt);
-      break;
-    }
-  }
-
-  processTimeout(arg);
+  ACE_TRACE(("Timer_::handle_timeout"));
+  process_timeout(arg);
   return(0);
 }
 
-long Timer_::startTimer(ACE_Time_Value &delay,
-                        const void *act,
-                        ACE_Time_Value interval = ACE_Time_Value::zero)
+/*
+ * @brief this member function is invoked to start the timer.
+ * @param This is the duration for timer.
+ * @param This is the argument passed by caller.
+ * @param This is to denote the preodicity whether this timer is going to be periodic or not.
+ * @return timer_id is return.
+ * */
+long Timer_::start_timer(ACE_UINT32 to,
+                         const void *act,
+                         ACE_Time_Value interval = ACE_Time_Value::zero)
 {
-  long tId;
-  do
-  {
-    _timerToken_t *tt = new _timerToken();
-    tId = ACE_Reactor::instance()->schedule_timer(dynamic_cast<Timer_*>(this),
-                                                      reinterpret_cast<const void *>(tt),
-                                                      delay,
-                                                      interval/*After this interval, timer will be started automatically.*/);
-    tt->timerId(tId);
-    tt->act(act);
+  ACE_TRACE(("Timer_::start_timer"));
+  ACE_Time_Value delay(to);
 
-    /*! Insert element into the list at back.*/
-    m_timerTokenList.push_back(tt);
-
-  }while(0);
-
-  return(tId);
+  return(ACE_Reactor::instance()->schedule_timer(this,
+                                                 act,
+                                                 delay,
+                                                 interval/*After this interval, timer will be started automatically.*/));
 }
 
-void Timer_::stopTimer(long tId)
+void Timer_::stop_timer(long tId)
 {
-  std::list<_timerToken_t *>::iterator it;
-
-  for(it = m_timerTokenList.begin(); it != m_timerTokenList.end(); it++)
-  {
-    _timerToken_t *tt = *it;
-
-    if(tId == tt->timerId())
-    {
-      /*! Remove this element from list.*/
-      m_timerTokenList.erase(it);
-      free(tt);
-      break;
-    }
-  }
-
+  ACE_TRACE((Timer_::stop_timer));
   ACE_Reactor::instance()->cancel_timer(tId);
 }
 
-ACE_INT32 Timer_::processTimeout(const void *act)
+ACE_INT32 Timer_::process_timeout(const void *act)
 {
   /*! Derived class function should have been called.*/
   return(0);
@@ -256,11 +310,11 @@ ACE_INT32 Timer_::processTimeout(const void *act)
 
 Timer_::Timer_()
 {
-  /*! Make the list empty now.*/
-  m_timerTokenList.clear();
 }
 
-
+Timer_::~Timer_()
+{
+}
 
 
 

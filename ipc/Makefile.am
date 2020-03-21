@@ -5,6 +5,7 @@ noinst_LIBRARIES = libipc.a
 libipc_a_SOURCES = src/ipc.cc
 
 libipc_a_CPPFLAGS=-I$(srcdir)/inc \
+                  -I$(top_srcdir)/common/inc \
                   -I/usr/local \
                   -I/usr/local/ACE-6.5.0/include
 

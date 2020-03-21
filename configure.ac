@@ -16,6 +16,7 @@ AC_HEADER_STDC
 AC_HEADER_DIRENT
 AC_CONFIG_FILES([
  Makefile
+ common/Makefile
  ipc/Makefile
  vap/Makefile
  vtysh/Makefile
