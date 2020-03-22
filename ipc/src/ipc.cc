@@ -27,8 +27,6 @@ IPC_::IPC_()
   m_magic = 0x00000000;
   m_handle = -1;
   m_ipcAddr.set("");
-  m_container = 0;
-  m_component = 0;
   m_facility = 0;
   m_instance = 0;
   m_ipcPort = 0;
@@ -37,28 +35,21 @@ IPC_::IPC_()
 
 }
 
-IPC_::IPC_(const char *ipAddr, ACE_UINT8 cont, ACE_UINT8 com,
-           ACE_UINT8 fac, ACE_UINT8 ins, const char *nodeTag)
+IPC_::IPC_(ACE_CString ipAddr, ACE_UINT8 fac,
+           ACE_UINT8 ins, ACE_CString node_tag)
 {
   do
   {
+    ACE_TRACE("IPC_::IPC_");
 
-    ACE_CString addr(ipAddr);
-    /*cont - container, com - component, fac - facility, ins - instance.*/
-    /*+---------+--------+--------+--------+
-     *| cont(1) | com(1) | fac(1) | ins(1) |
-     *+---------+--------+--------+--------+
-     * */
-    ACE_UINT32 taskId = cont << 24 |
-                        com  << 16 |
-                        fac  << 8  |
-                        ins  << 0 ;
+    selfProcId(CommonIF::get_hash32(reinterpret_cast<const ACE_UINT8 *>(node_tag.c_str())));
+    m_nodeTag = node_tag;
 
-    m_ipAddr = addr;
 
-    ipcPort(taskId);
-    container(cont);
-    component(com);
+    selfTaskId(CommonIF::get_task_id(fac, ins));
+    m_ipAddr = ipAddr;
+
+    ipcPort(CommonIF::get_ipc_port(fac, ins));
     facility(fac);
     instance(ins);
 
@@ -88,16 +79,6 @@ ACE_UINT32 IPC_::ipcPort(void)
   return(m_ipcPort);
 }
 
-void IPC_::container(ACE_UINT8 container)
-{
-  m_container = container;
-}
-
-ACE_UINT8 IPC_::container(void)
-{
-  return(m_container);
-}
-
 void IPC_::facility(ACE_UINT8 fac)
 {
   m_facility = fac;
@@ -106,16 +87,6 @@ void IPC_::facility(ACE_UINT8 fac)
 ACE_UINT8 IPC_::facility(void)
 {
   return(m_facility);
-}
-
-void IPC_::component(ACE_UINT8 component)
-{
-  m_component = component;
-}
-
-ACE_UINT8 IPC_::component(void)
-{
-  return(m_component);
 }
 
 void IPC_::instance(ACE_UINT8 instance)
@@ -137,6 +108,22 @@ ACE_HANDLE IPC_::handle(void)
 {
   return(m_handle);
 }
+
+ACE_UINT32 IPC_::get_self_taskId(void)
+{
+  return(m_selfTaskId);
+}
+
+void IPC_::nodeTag(ACE_CString node_tag)
+{
+  m_nodeTag = node_tag;
+}
+
+ACE_CString IPC_::nodeTag(void)
+{
+  return(m_nodeTag);
+}
+
 
 /*
  * @brief  This is the hook method of ACE Event Handler and is called by ACE Framework to retrieve the
@@ -166,8 +153,8 @@ ACE_INT32 IPC_::handle_input(ACE_HANDLE handle)
   ACE_INET_Addr peer;
   do
   {
-	  memset((void *)mb->rd_ptr(), 0, (CommonIF::SIZE_64M * sizeof(char)));
-    if((recv_len = m_dgram.recv(mb->rd_ptr(), (CommonIF::SIZE_64M * sizeof(char)), peer)) < 0)
+	  memset((void *)mb->rd_ptr(), 0, (CommonIF::SIZE_64MB * sizeof(char)));
+    if((recv_len = m_dgram.recv(mb->rd_ptr(), (CommonIF::SIZE_64MB * sizeof(char)), peer)) < 0)
     {
       ACE_ERROR((LM_ERROR, "Receive from peer 0x%X Failed\n", peer.get_port_number()));
       break;
@@ -195,17 +182,6 @@ ACE_UINT32 IPC_::get_self_procId(void)
 void IPC_::selfProcId(ACE_UINT32 selfProcId)
 {
 	m_selfProcId = selfProcId;
-}
-
-void IPC_::nodeTag(const char *selfNodeTag)
-{
-	ACE_CString cs(selfNodeTag);
-	m_nodeTag = cs;
-}
-
-ACE_CString IPC_::nodeTag(void)
-{
-	return(m_nodeTag);
 }
 
 /*
@@ -250,11 +226,6 @@ ACE_UINT32 IPC_::send_ipc(ACE_UINT32 dstProcId, ACE_UINT8 dstEntity,
 	return(reqLen);
 }
 
-
-ACE_UINT32 IPC_::get_self_taskId(void)
-{
-  return(m_ipcPort);
-}
 
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  *
