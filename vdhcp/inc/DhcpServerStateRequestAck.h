@@ -1,7 +1,6 @@
-#ifndef __REQUEST_ACK_ST_H__
-#define __REQUEST_ACK_ST_H__
+#ifndef __DHCP_SERVER_STATE_REQUEST_ACK_H__
+#define __DHCP_SERVER_STATE_REQUEST_ACK_H__
 
-#include "common.h"
 
 class RequestAckST : public DhcpState
 {
@@ -11,7 +10,7 @@ private:
 
 public:
   ~RequestAckST();
-  static RequestAckST *get_instance();
+  static RequestAckST *instance();
 
   void onEntry(DHCP::Server *parent);
   void onExit(DHCP::Server *parent);
@@ -22,4 +21,4 @@ public:
   ACE_UINT32 leaseTO(DHCP::Server *parent);
 };
 
-#endif /*__REQUEST_ACK_ST_H__*/
+#endif /*__DHCP_SERVER_STATE_REQUEST_ACK_H__*/

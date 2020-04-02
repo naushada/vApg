@@ -20,5 +20,7 @@ AC_CONFIG_FILES([
  ipc/Makefile
  vap/Makefile
  vtysh/Makefile
+ vdhcp/Makefile
+ cpgateway/Makefile
 ])
 AC_OUTPUT

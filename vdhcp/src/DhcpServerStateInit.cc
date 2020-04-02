@@ -1,7 +1,6 @@
 #ifndef __DHCP_SERVER_STATE_INIT_CC__
 #define __DHCP_SERVER_STATE_INIT_CC__
 
-#include "commonIF.h"
 #include "DhcpServerStateInit.h"
 #include "ace/Log_Msg.h"
 

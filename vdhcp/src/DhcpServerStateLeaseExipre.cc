@@ -1,13 +1,14 @@
-#ifndef __LEASETO_ST_CC__
-#define __LEASETO_ST_CC__
-#include "LeaseTOST.h"
+#ifndef __DHCP_SERVER_STATE_LEASE_EXPIRE__CC__
+#define __DHCP_SERVER_STATE_LEASE_EXPIRE__CC__
+
+#include "DhcpServerStateLeaseExpire.h"
 #include "ace/Log_Msg.h"
 
 LeaseTOST *LeaseTOST::m_instance = NULL;
 
-static LeaseTOST *LeaseTOST::get_instance()
+static LeaseTOST *LeaseTOST::instance()
 {
-  ACE_TRACE("LeaseTOST::get_instance");
+  ACE_TRACE("LeaseTOST::instance");
   if(!m_instance)
   {
     m_instance = new LeaseTOST();
@@ -58,4 +59,4 @@ ACE_UINT32 LeaseTOST::leaseTO(DHCP::Server *parent)
 
 
 
-#endif /*__LEASETO_ST_CC__*/
+#endif /*__DHCP_SERVER_STATE_LEASE_EXPIRE__CC__*/

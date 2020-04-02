@@ -1,16 +1,16 @@
-#ifndef __OFFER_ST_H__
-#define __OFFER_ST_H__
+#ifndef __DHCP_SERVER_STATE_OFFER_H__
+#define __DHCP_SERVER_STATE_OFFER_H__
 
-#include "common.h"
+#include "DhcpServerState.h"
 
-class OfferST : public DhcpState
+class OfferST : public DhcpServerState
 {
 private:
   static OfferST *m_instance;
   OfferST();
 public:
   ~OfferST();
-  static OfferST *get_instance();
+  static OfferST *instance();
   void onEntry(DHCP::Server *parent);
   void onExit(DHCP::Server *parent);
   ACE_UINT32 offer(DHCP::Server *parent);
@@ -22,4 +22,4 @@ public:
 };
 
 
-#endif /*__OFFER_ST_H__*/
+#endif /*__DHCP_SERVER_STATE_OFFER_H__*/

@@ -1,9 +1,9 @@
 #ifndef __DHCP_SERVER_STATE_DISCOVER_CC__
-#define __DHCP_SERVER_STATE_DISCOVER_CC__ 
+#define __DHCP_SERVER_STATE_DISCOVER_CC__
 
 #include "DhcpServer.h"
+#include "DhcpServerStateRequest.h"
 #include "DhcpServerStateDiscover.h"
-#include "commonIF.h"
 #include "ace/Log_Msg.h"
 
 DhcpServerStateDiscover *DhcpServerStateDiscover::m_instance = NULL;

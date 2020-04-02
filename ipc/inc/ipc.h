@@ -5,6 +5,10 @@
 #include <unordered_map>
 #include <list>
 
+#include "ace/INET_Addr.h"
+#include "ace/SOCK_Dgram.h"
+#include "ace/SString.h"
+
 using namespace std;
 
 typedef unordered_map<ACE_UINT32, ACE_INET_Addr>taskIdToPeerMap_t;
@@ -61,14 +65,13 @@ struct _timerToken
 
 typedef struct _timerToken _timerToken_t;
 
-class Timer_ : public ACE_Event_Handler
-{
-  private:
 
+class UniTimer : public ACE_Event_Handler
+{
   public:
 
-    Timer_();
-    virtual ~Timer_();
+    UniTimer();
+    virtual ~UniTimer();
 
     virtual ACE_INT32 handle_timeout(ACE_Time_Value &tv,
                                      const void *act=0);
@@ -78,12 +81,12 @@ class Timer_ : public ACE_Event_Handler
 
     void stop_timer(long timerId);
 
-    /*!This will be overridden in subclass.*/
+    /*!This will be overridden/redefined in subclass.*/
     virtual ACE_INT32 process_timeout(const void *act);
 };
 
 
-class IPC_ : public ACE_Event_Handler
+class UniIPC : public ACE_Event_Handler
 {
   private:
     ACE_UINT32 m_magic;
@@ -97,19 +100,19 @@ class IPC_ : public ACE_Event_Handler
 	  ACE_CString m_nodeTag;
     ACE_UINT8 m_facility;
     ACE_UINT8 m_instance;
-    ACE_UINT32 m_ipcPort;
+    ACE_UINT16 m_ipcPort;
     ACE_CString m_ipAddr;
     taskIdToPeerMap_t m_taskIdToPeerUMap;
 
   public:
-    IPC_();
-    IPC_( ACE_CString ipAddr, ACE_UINT8 facility,
-         ACE_UINT8 instance, ACE_CString nodeTag);
+    UniIPC();
+    UniIPC(ACE_CString ipAddr, ACE_UINT8 facility,
+           ACE_UINT8 instance, ACE_CString nodeTag);
 
-    virtual ~IPC_();
+    virtual ~UniIPC();
 
-    ACE_UINT32 ipcPort(void);
-    void ipcPort(ACE_UINT32 ipcPort);
+    ACE_UINT16 ipcPort(void);
+    void ipcPort(ACE_UINT16 ipcPort);
 
     ACE_UINT8 facility(void);
     void facility(ACE_UINT8 facility);
@@ -134,9 +137,8 @@ class IPC_ : public ACE_Event_Handler
     ACE_UINT32 get_taskId(ACE_UINT8 entity, ACE_UINT8 instance);
 
     ACE_UINT32 send_ipc(ACE_UINT32 procId, ACE_UINT8 entity,
-    		            ACE_UINT8 instance,ACE_UINT8 *req,
-						ACE_UINT32 reqLen, const char* ipAddr = NULL,
-						ACE_UINT16 sendPort=0);
+    		                ACE_UINT8 instance, ACE_Byte *req,
+						            ACE_UINT32 reqLen);
 
     /*! ACE Hook method */
     virtual ACE_INT32 handle_input(ACE_HANDLE handle);
@@ -146,67 +148,6 @@ class IPC_ : public ACE_Event_Handler
     virtual ACE_UINT32 handle_ipc(ACE_UINT8 *req, ACE_UINT32 reqLen);
 
 };
-
-
-class VapgTask : public IPC_
-{
-  public:
-    VapgTask(ACE_CString ipAddr, ACE_UINT8 entity, ACE_UINT8 instance, ACE_CString nodeTag)
-      : IPC_(ipAddr, entity, instance, nodeTag)
-    {
-      ACE_NEW_NORETURN(m_timer, Timer_);
-    }
-
-    VapgTask():IPC_()
-    {
-      m_timer = NULL;
-    }
-
-    Timer_ *get_timer_instance(void)
-    {
-      return(m_timer);
-    }
-
-    virtual ~VapgTask();
-
-  private:
-    Timer_ *m_timer;
-
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

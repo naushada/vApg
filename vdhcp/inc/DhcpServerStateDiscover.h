@@ -1,7 +1,6 @@
 #ifndef __DHCP_SERVER_STATE_DISCOVER_H__
 #define __DHCP_SERVER_STATE_DISCOVER_H__
 
-#include "DhcpServer.h"
 #include "DhcpServerState.h"
 
 class DhcpServerStateDiscover : public DhcpServerState

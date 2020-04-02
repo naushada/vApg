@@ -2,9 +2,6 @@
 #define __DHCP_SERVER_STATE_REQUEST_CC__
 
 #include "DhcpServerStateRequest.h"
-#include "DhcpServerStateRequestAck.h"
-#include "DhcpServer.h"
-#include "commonIF.h"
 #include "ace/Log_Msg.h"
 
 DhcpServerStateRequest *DhcpServerStateRequest::m_instance = NULL;

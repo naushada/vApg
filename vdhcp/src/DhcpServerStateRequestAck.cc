@@ -1,11 +1,12 @@
-#ifndef __REQUEST_ACK_ST_CC__
-#define __REQUEST_ACK_ST_CC__
+#ifndef __DHCP_SERVER_STATE_REQUEST_ACK_CC__
+#define __DHCP_SERVER_STATE_REQUEST_ACK_CC__
+
 #include "RequestAckST.h"
 #include "ace/Log_Msg.h"
 
 RequestAckST *RequestAckST::m_instance = NULL;
 
-static RequestAckST *RequestAckST::get_instance()
+static RequestAckST *RequestAckST::instance()
 {
   ACE_TRACE("RequestAckST::get_instance");
   if(!m_instance)
@@ -56,4 +57,4 @@ ACE_UINT32 RequestAckST::leaseTO(DHCP::Server *parent)
   return(0);
 }
 
-#endif /*__REQUEST_ACK_ST_CC__*/
+#endif /*__DHCP_SERVER_STATE_REQUEST_ACK_CC__*/

@@ -1,7 +1,6 @@
 #ifndef __DHCP_SERVER_STATE_INIT_H__
 #define __DHCP_SERVER_STATE_INIT_H__
 
-#include "DhcpServer.h"
 #include "DhcpServerState.h"
 
 class DhcpServerStateInit : public DhcpServerState

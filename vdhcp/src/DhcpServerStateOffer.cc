@@ -1,14 +1,14 @@
-#ifndef __OFFER_ST_CC__
-#define __OFFER_ST_CC__
+#ifndef __DHCP_SERVER_STATE_OFFER_CC__
+#define __DHCP_SERVER_STATE_OFFER_CC__
 
-#include "OfferST.h"
+#include "DhcpServerStateOffer.h"
 #include "ace/Log_Msg.h"
 
 OfferST *OfferST::m_instance = NULL;
 
-static OfferST *OfferST::get_instance()
+static OfferST *OfferST::instance()
 {
-  ACE_TRACE("OfferST::get_instance");
+  ACE_TRACE("OfferST::instance");
   if(!m_instance)
   {
     m_instance = new OfferST();
@@ -58,4 +58,4 @@ ACE_UINT32 OfferST::leaseTO(DHCP::Server *parent)
 }
 
 
-#endif /*__OFFER_ST_CC__*/
+#endif /*__DHCP_SERVER_STATE_OFFER_CC__*/

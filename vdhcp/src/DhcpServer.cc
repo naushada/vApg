@@ -5,8 +5,17 @@
 #include "ace/Event_Handler.h"
 #include "ace/SString.h"
 #include "ace/SOCK_Dgram.h"
-#include "server.h"
 #include "ace/Log_Msg.h"
+
+#include "DhcpServer.h"
+#include "DhcpServerStateInit.h"
+
+//DHCP::Server(CPGateway *parent)
+DHCP::Server::Server()
+{
+  //m_parent = parent;
+  setState(DhcpServerStateInit::instance());
+}
 
 DHCP::Server::~Server()
 {
@@ -23,7 +32,7 @@ void DHCP::Server::setState(DhcpServerState *st)
   }
 
   m_state = st;
-  m_state.onEntry(this);
+  m_state->onEntry(this);
 }
 
 DhcpServerState *DHCP::Server::getState(void)
@@ -48,7 +57,7 @@ ACE_INT32 DHCP::Server::process_timeout(const void *act)
 }
 
 
-ACE_INT32 DHCP::Server::start()
+ACE_UINT32 DHCP::Server::start()
 {
   ACE_TRACE("DHCP::Server::start\n");
 #if 0
@@ -59,7 +68,7 @@ ACE_INT32 DHCP::Server::start()
   return(0);
 }
 
-ACE_INT32 DHCP::Server::stop()
+ACE_UINT32 DHCP::Server::stop()
 {
   ACE_TRACE("DHCP::Server::stop\n");
   return(0);

@@ -1,10 +1,9 @@
-#ifndef __LEASETO_ST_H__
-#define __LEASETO_ST_H__
+#ifndef __DHCP_SERVER_STATE_LEASE_EXPIRE__H__
+#define __DHCP_SERVER_STATE_LEASE_EXPIRE__H__
 
-#include "common.h"
+#include "DhcpServerState.h"
 
-
-class LeaseTOST : public DhcpState
+class LeaseTOST : public DhcpServerState
 {
 private:
   static LeaseTOST *m_instance;
@@ -12,7 +11,7 @@ private:
 
 public:
   ~LeaseTOST();
-  static LeaseTOST *get_instance();
+  static LeaseTOST *instance();
 
   void onEntry(DHCP::Server *parent);
   void onExit(DHCP::Server *parent);
@@ -25,4 +24,4 @@ public:
 };
 
 
-#endif /*__LEASETO_ST_H__*/
+#endif /*__DHCP_SERVER_STATE_LEASE_EXPIRE__H__*/

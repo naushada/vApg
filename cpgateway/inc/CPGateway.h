@@ -1,7 +1,7 @@
 #ifndef __CPGATEWAY_H__
 #define __CPGATEWAY_H__
 
-#include "server.h"
+#include "DhcpServer.h"
 #include "CPGatewayState.h"
 
 #include <unordered_map>
