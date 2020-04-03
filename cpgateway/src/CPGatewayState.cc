@@ -1,9 +1,15 @@
 #ifndef __CPGATEWAY_STATE_CC__
 #define __CPGATEWAY_STATE_CC__
 
-#include "commonIF.h"
 #include "ace/Log_Msg.h"
+#include "ace/SString.h"
+#include "ace/Basic_Types.h"
+
+#include "commonIF.h"
+#include "CPGateway.h"
 #include "CPGatewayState.h"
+
+#include "DhcpServer.h"
 
 CPGatewayState::CPGatewayState()
 {
@@ -36,8 +42,8 @@ ACE_UINT32 CPGatewayState::processRequest(CPGateway *parent,
       TransportIF::UDP *udpHdr = (TransportIF::UDP *)&in[sizeof(TransportIF::ETH) +
                                                          sizeof(TransportIF::IP)];
 
-      if((TransportIF::DHCP_CLIENT_PORT == ACE_OS::ntohs(udpHdr->src_port)) &&
-         (TransportIF::DHCP_SERVER_PORT == ACE_OS::ntohs(udpHdr->dest_port)))
+      if((TransportIF::DHCP_CLIENT_PORT == ntohs(udpHdr->src_port)) &&
+         (TransportIF::DHCP_SERVER_PORT == ntohs(udpHdr->dest_port)))
       {
         /*This is a DHCP Message.*/
         TransportIF::DHCP *dhcpHdr = (TransportIF::DHCP *)&in[sizeof(TransportIF::ETH) +
@@ -53,13 +59,13 @@ ACE_UINT32 CPGatewayState::processRequest(CPGateway *parent,
         }
         else
         {
-          DHCP::Server *sess = new DHCP::Server(parent);
+          DHCP::Server *sess = new DHCP::Server();
           parent->createSubscriber(haddr);
           sess->getState()->rx(sess, in, inLen);
         }
 
       }
-      else if()
+      //else if()
       {
         /*DNS Packet.*/
       }
@@ -76,11 +82,13 @@ ACE_UINT32 CPGatewayState::processRequest(CPGateway *parent,
 ACE_UINT32 CPGatewayState::lock(CPGateway *parent)
 {
   ACE_TRACE("CPGatewayState::lock\n");
+  return(0);
 }
 
 ACE_UINT32 CPGatewayState::unlock(CPGateway *parent)
 {
   ACE_TRACE("CPGatewayState::unlock\n");
+  return(0);
 }
 
 void CPGatewayState::onEntry(CPGateway *parent)

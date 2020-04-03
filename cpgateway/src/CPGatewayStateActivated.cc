@@ -1,8 +1,10 @@
 #ifndef __CPGATEWAY_STATE_ACTIVATED_CC__
 #define __CPGATEWAY_STATE_ACTIVATED_CC__
 
-#include "CPGatewayStateActivated.h"
 #include "ace/Log_Msg.h"
+#include "ace/SString.h"
+#include "ace/Basic_Types.h"
+#include "CPGatewayStateActivated.h"
 
 CPGatewayStateActivated *CPGatewayStateActivated::m_instance = NULL;
 
@@ -13,7 +15,7 @@ CPGatewayStateActivated::CPGatewayStateActivated()
   description(desc);
 }
 
-virtual CPGatewayStateActivated::~CPGatewayStateActivated()
+CPGatewayStateActivated::~CPGatewayStateActivated()
 {
   ACE_TRACE("CPGatewayStateActivated::~CPGatewayStateActivated\n");
 }

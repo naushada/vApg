@@ -4,11 +4,14 @@
 #include "DhcpServer.h"
 #include "CPGatewayState.h"
 
+#include "ace/Event_Handler.h"
+#include "ace/SOCK_Dgram.h"
 #include "ace/SString.h"
-#include "ace/Hash_Map_Manager_T.h"
+#include "ace/Hash_Map_Manager.h"
+#include "ace/Null_Mutex.h"
 
-typedef ACE_Hash_Map_Manager<ACE_CString, DHCP::Server&, ACE_Null_Mutex>subscriberMap_t;
-typedef subscriberMap_t::iterator subscriberMap_ter;
+typedef ACE_Hash_Map_Manager<ACE_CString, DHCP::Server*, ACE_Null_Mutex>subscriberMap_t;
+typedef ACE_Hash_Map_Manager<ACE_CString, DHCP::Server *, ACE_Null_Mutex>::iterator subscriberMap_ter;
 
 class CPGateway : public ACE_Event_Handler
 {
@@ -28,10 +31,11 @@ class CPGateway : public ACE_Event_Handler
     subscriberMap_t m_subscriberMap;
 
   public:
-    CPGateway(ACE_CString intfName)
-    {
-      m_ethInterface = intfName;
-    }
+    virtual ~CPGateway();
+    CPGateway(ACE_CString intfName);
+    CPGateway(ACE_CString intfName, ACE_CString ipAddr,
+              ACE_UINT8 entity, ACE_UINT8 instance,
+              ACE_CString nodeTag);
 
     ACE_UINT8 start();
     ACE_UINT8 stop();
@@ -48,7 +52,7 @@ class CPGateway : public ACE_Event_Handler
 
     ACE_UINT8 isSubscriberFound(ACE_CString macAddress);
     ACE_UINT8 createSubscriber(ACE_CString macAddress);
-    DHCP::Server &getSubscriber(ACE_CString macAddress);
+    DHCP::Server *getSubscriber(ACE_CString macAddress);
     ACE_UINT8 deleteSubscriber(ACE_CString macAddress);
     ACE_UINT32 processDhcpRequest(const char *inPtr, ACE_UINT32 inLen);
 

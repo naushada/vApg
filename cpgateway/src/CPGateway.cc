@@ -5,8 +5,8 @@
 #include <sys/un.h>
 #include <sys/ioctl.h>
 #include <net/if.h>
+#include <linux/if_packet.h>
 #include <linux/tcp.h>
-//#include <linux/if_arp.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
@@ -14,7 +14,7 @@
 #include <unistd.h>
 
 #include "ace/config-lite.h"
-#include "ace/os_include/sys/os_uio.h"
+#include "ace/Basic_Types.h"
 #include "ace/Message_Block.h"
 #include "ace/Reactor.h"
 #include "ace/Event_Handler.h"
@@ -25,6 +25,8 @@
 #include "commonIF.h"
 #include "CPGateway.h"
 #include "CPGatewayState.h"
+#include "CPGatewayStateActivated.h"
+
 #include "DhcpServer.h"
 
 void CPGateway::setState(CPGatewayState *st)
@@ -48,7 +50,7 @@ int CPGateway::handle_input(ACE_HANDLE fd)
 {
   ACE_TRACE("CPGateway::handle_input\n");
   struct sockaddr_ll sa;
-  socklen_t addr_len = sizeof(sa);
+  int addr_len = sizeof(sa);
   ACE_INT32 len = -1;
 
   ACE_NEW_NORETURN(m_mb, ACE_Message_Block(CommonIF::SIZE_64MB));
@@ -67,7 +69,7 @@ int CPGateway::handle_input(ACE_HANDLE fd)
   /*Check wheather CPGateway is administrative locked/error state.*/
   if(getState())
   {
-    getState()->processRequest(this, m_mb->rd_ptr(), m_mb->length());
+    getState()->processRequest(this, (ACE_Byte *)m_mb->rd_ptr(), m_mb->length());
     return(0);
   }
 
@@ -95,7 +97,7 @@ ACE_INT32 CPGateway::get_index(void)
 
     ACE_OS::memset((void *)&ifr, 0, sizeof(struct ifreq));
     ifr.ifr_addr.sa_family = AF_INET;
-    ACE_OS::strncpy(ifr.ifr_name, m_ethInterface.c_str(), IFNAMSIZ);
+    ACE_OS::strncpy(ifr.ifr_name, (const char *)m_ethInterface.c_str(), TransportIF::ETH_ALEN);
 
     if(ACE_OS::ioctl(handle, SIOCGIFHWADDR, &ifr) < 0)
     {
@@ -124,7 +126,7 @@ ACE_INT32 CPGateway::get_index(void)
 ACE_INT32 CPGateway::open(void)
 {
   ACE_HANDLE handle = -1;
-  ACE_HANDLE option = 0;
+  const char option = 1;
   struct ifreq ifr;
   struct sockaddr_ll sa;
   struct packet_mreq mr;
@@ -132,7 +134,7 @@ ACE_INT32 CPGateway::open(void)
 
   do
   {
-    handle = ACE_OS::socket(PF_PACKET, SOCK_RAW, ACE_OS::htons(TransportIF::ETH_P_ALL));
+    handle = ACE_OS::socket(PF_PACKET, SOCK_RAW, htons(TransportIF::ETH_P_ALL));
 
     if(handle < 0)
     {
@@ -140,12 +142,8 @@ ACE_INT32 CPGateway::open(void)
       break;
     }
 
-    option = 1;
     ACE_OS::setsockopt(handle, SOL_SOCKET, TCP_NODELAY, &option, sizeof(option));
-    option = 1;
     ACE_OS::setsockopt(handle, SOL_SOCKET, SO_BROADCAST, &option, sizeof(option));
-
-
     ACE_OS::memset((void *)&ifr, 0, sizeof(ifr));
 
     if(ACE_OS::ioctl(handle, SIOCGIFFLAGS, &ifr) < 0)
@@ -168,7 +166,7 @@ ACE_INT32 CPGateway::open(void)
     mr.mr_ifindex = get_index();
     mr.mr_type = PACKET_MR_PROMISC;
 
-    if(ACE_OS::setsockopt(handle, SOL_PACKET, PACKET_ADD_MEMBERSHIP, &mr, sizeof(mr)) < 0)
+    if(ACE_OS::setsockopt(handle, SOL_PACKET, PACKET_ADD_MEMBERSHIP, (const char *)&mr, sizeof(mr)) < 0)
     {
       ACE_ERROR((LM_ERROR, "%IAdding membership failed for handle %d\n", handle));
       ACE_OS::close(handle);
@@ -177,7 +175,7 @@ ACE_INT32 CPGateway::open(void)
 
     ACE_OS::memset((void *)&sa, 0, sizeof(sa));
     sa.sll_family = AF_PACKET;
-    sa.sll_protocol = ACE_OS::htons(ETH_P_ALL);
+    sa.sll_protocol = htons(TransportIF::ETH_P_ALL);
     sa.sll_ifindex = get_index();
 
     if(ACE_OS::bind(handle, (struct sockaddr *)&sa, sizeof(sa)) < 0)
@@ -208,12 +206,19 @@ void CPGateway::set_handle(ACE_HANDLE handle)
 ACE_HANDLE CPGateway::get_handle() const
 {
   ACE_TRACE("CPGateway::get_handle");
-  return(handle());
+  return(const_cast<CPGateway *>(this)->handle());
+}
+
+CPGateway::CPGateway(ACE_CString intfName, ACE_CString ipAddr,
+                     ACE_UINT8 entity, ACE_UINT8 instance,
+                     ACE_CString nodeTag)
+{
+  ACE_TRACE("CPGateway::CPGateway\n");
 }
 
 CPGateway::CPGateway(ACE_CString intfName)
 {
-  ACE_TRACE("CPGateway::CPGateway");
+  ACE_TRACE("CPGateway::CPGateway\n");
 
   m_ethInterface = intfName;
 
@@ -226,7 +231,7 @@ CPGateway::CPGateway(ACE_CString intfName)
   }
 }
 
-ACE_INT32 CPGateway::start()
+ACE_UINT8 CPGateway::start()
 {
   ACE_TRACE("CPGateway::start\n");
   ACE_Time_Value to(5);
@@ -244,7 +249,7 @@ ACE_INT32 CPGateway::start()
   return(0);
 }
 
-ACE_INT32 CPGateway::stop()
+ACE_UINT8 CPGateway::stop()
 {
   ACE_TRACE("CPGateway::stop\n");
   return(0);
@@ -252,29 +257,33 @@ ACE_INT32 CPGateway::stop()
 
 ACE_UINT8 CPGateway::isSubscriberFound(ACE_CString macAddress)
 {
-  subscriberMap_ter it;
+  if(m_subscriberMap.find(macAddress) < 0)
+  {
+    ACE_DEBUG((LM_ERROR, "This client %s is not found\n", macAddress.c_str()));
+  }
 
-  it = m_subscriberMap.find(macAddress);
-
-  return(it != m_subscriberMap.end());
+  return(0);
 }
 
 ACE_UINT8 CPGateway::createSubscriber(ACE_CString macAddress)
 {
 
-  DHCP::Server sess();
+  DHCP::Server *sess = new DHCP::Server();
   /*let STL do the memory management for stack object.*/
-  m_subscriberMap.insert(std::make_pair<ACE_CString, DHCP::Server &>(macAddress, sess));
+  m_subscriberMap.bind(macAddress, sess);
 
   return(0);
 }
 
 DHCP::Server *CPGateway::getSubscriber(ACE_CString macAddress)
 {
-  subscriberMap_ter it;
+  DHCP::Server *sess = NULL;
+  if(m_subscriberMap.find(macAddress, sess) < 0)
+  {
+    ACE_DEBUG((LM_ERROR, "No session for client %s is found\n", macAddress.c_str()));
+  }
 
-  it = m_subscriberMap.find(macAddress);
-  return(it->second);
+  return(sess);
 }
 
 ACE_UINT32 CPGateway::processDhcpRequest(const char *inPtr, ACE_UINT32 inLen)
@@ -282,8 +291,8 @@ ACE_UINT32 CPGateway::processDhcpRequest(const char *inPtr, ACE_UINT32 inLen)
 
   ACE_CString srcMac((const char *)&inPtr[TransportIF::ETH_ALEN], TransportIF::ETH_ALEN);
 
-  DHCP::Server sess = getSubscriber(srcMac);
-  //sess.getState()->;
+  DHCP::Server *sess = getSubscriber(srcMac);
+  sess->getState()->rx(sess, (ACE_Byte *)inPtr, inLen);
   return(0);
 }
 
@@ -297,8 +306,8 @@ int main(int argc, char *argv[])
    * argv[3] = instanceId
    * argv[4] = nodeName
    * */
-  CPGateway *cp = new CPGateway(argv[0], argv[1], atoi(argv[2]),
-                                atoi(argv[3]), argv[4]);
+  CPGateway *cp = new CPGateway(argv[0], argv[1], ACE_OS::atoi(argv[2]),
+                                ACE_OS::atoi(argv[3]), argv[4]);
 
   if(!cp->start())
   {
