@@ -1,8 +1,9 @@
 #ifndef __DHCP_SERVER_STATE_REQUEST_ACK_H__
 #define __DHCP_SERVER_STATE_REQUEST_ACK_H__
 
+#include "DhcpServerState.h"
 
-class RequestAckST : public DhcpState
+class RequestAckST : public DhcpServerState
 {
 private:
   static RequestAckST *m_instance;

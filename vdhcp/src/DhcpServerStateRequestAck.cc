@@ -1,12 +1,12 @@
 #ifndef __DHCP_SERVER_STATE_REQUEST_ACK_CC__
 #define __DHCP_SERVER_STATE_REQUEST_ACK_CC__
 
-#include "RequestAckST.h"
+#include "DhcpServerStateRequestAck.h"
 #include "ace/Log_Msg.h"
 
 RequestAckST *RequestAckST::m_instance = NULL;
 
-static RequestAckST *RequestAckST::instance()
+RequestAckST *RequestAckST::instance()
 {
   ACE_TRACE("RequestAckST::get_instance");
   if(!m_instance)

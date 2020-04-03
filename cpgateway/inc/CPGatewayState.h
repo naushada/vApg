@@ -1,6 +1,8 @@
 #ifndef __CPGATEWAY_STATE_H__
 #define __CPGATEWAY_STATE_H__
 
+class CPGateway;
+
 class CPGatewayState
 {
 protected:

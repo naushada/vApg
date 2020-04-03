@@ -6,7 +6,7 @@
 
 OfferST *OfferST::m_instance = NULL;
 
-static OfferST *OfferST::instance()
+OfferST *OfferST::instance()
 {
   ACE_TRACE("OfferST::instance");
   if(!m_instance)

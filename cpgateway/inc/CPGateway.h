@@ -4,9 +4,10 @@
 #include "DhcpServer.h"
 #include "CPGatewayState.h"
 
-#include <unordered_map>
+#include "ace/SString.h"
+#include "ace/Hash_Map_Manager_T.h"
 
-typedef std::unordered_map<ACE_CString, DHCP::Server *>subscriberMap_t;
+typedef ACE_Hash_Map_Manager<ACE_CString, DHCP::Server&, ACE_Null_Mutex>subscriberMap_t;
 typedef subscriberMap_t::iterator subscriberMap_ter;
 
 class CPGateway : public ACE_Event_Handler

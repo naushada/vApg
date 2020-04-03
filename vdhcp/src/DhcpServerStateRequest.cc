@@ -1,12 +1,14 @@
 #ifndef __DHCP_SERVER_STATE_REQUEST_CC__
 #define __DHCP_SERVER_STATE_REQUEST_CC__
 
+#include "DhcpServerStateLeaseExpire.h"
 #include "DhcpServerStateRequest.h"
+#include "DhcpServer.h"
 #include "ace/Log_Msg.h"
 
 DhcpServerStateRequest *DhcpServerStateRequest::m_instance = NULL;
 
-static DhcpServerStateRequest *DhcpServerStateRequest::instance()
+DhcpServerStateRequest *DhcpServerStateRequest::instance()
 {
   ACE_TRACE("DhcpServerStateRequest::instance\n");
   if(!m_instance)
@@ -58,7 +60,7 @@ ACE_UINT32 DhcpServerStateRequest::request(DHCP::Server *parent, ACE_Byte *in, A
 
 
   /*Move to next State.*/
-  parent->setState(DhcpServerStateLeaseExipre::instance());
+  parent->setState(DhcpServerStateLeaseExpire::instance());
   return(0);
 }
 

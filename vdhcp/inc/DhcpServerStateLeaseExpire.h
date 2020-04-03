@@ -3,15 +3,15 @@
 
 #include "DhcpServerState.h"
 
-class LeaseTOST : public DhcpServerState
+class DhcpServerStateLeaseExpire : public DhcpServerState
 {
 private:
-  static LeaseTOST *m_instance;
-  LeaseTOST();
+  static DhcpServerStateLeaseExpire *m_instance;
+  DhcpServerStateLeaseExpire();
 
 public:
-  ~LeaseTOST();
-  static LeaseTOST *instance();
+  ~DhcpServerStateLeaseExpire();
+  static DhcpServerStateLeaseExpire *instance();
 
   void onEntry(DHCP::Server *parent);
   void onExit(DHCP::Server *parent);

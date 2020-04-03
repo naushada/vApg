@@ -2,7 +2,7 @@
 
 noinst_LIBRARIES = libcpgw.a
 
-libcpgw_a_SOURCES = src/cpgateway.cc \
+libcpgw_a_SOURCES = src/CPGateway.cc \
 										src/CPGatewayStateActivated.cc \
 										src/CPGatewayState.cc \
 										src/CPGatewayStateLocked.cc \
@@ -10,6 +10,7 @@ libcpgw_a_SOURCES = src/cpgateway.cc \
 
 libcpgw_a_CPPFLAGS=-I$(srcdir)/inc \
                   -I$(top_srcdir)/common/inc \
+                  -I$(top_srcdir)/vdhcp/inc \
                   -I/usr/local \
                   -I/usr/local/ACE-6.5.0/include
 

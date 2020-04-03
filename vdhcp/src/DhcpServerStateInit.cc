@@ -1,12 +1,14 @@
 #ifndef __DHCP_SERVER_STATE_INIT_CC__
 #define __DHCP_SERVER_STATE_INIT_CC__
 
+#include "DhcpServer.h"
 #include "DhcpServerStateInit.h"
+#include "DhcpServerStateRequest.h"
 #include "ace/Log_Msg.h"
 
 DhcpServerStateInit *DhcpServerStateInit::m_instance = NULL;
 
-static DhcpServerStateInit *DhcpServerStateInit::instance()
+DhcpServerStateInit *DhcpServerStateInit::instance()
 {
   ACE_TRACE("DhcpServerStateInit::instance\n");
 
@@ -30,12 +32,12 @@ DhcpServerStateInit::~DhcpServerStateInit()
   ACE_TRACE("DhcpServerStateInit::~DhcpServerStateInit\n");
 }
 
-void InitST::onEntry(DHCP::Server *parent)
+void DhcpServerStateInit::onEntry(DHCP::Server *parent)
 {
   ACE_TRACE("DhcpServerStateInit::onEntry\n");
 }
 
-void InitST::onExit(DHCP::Server *parent)
+void DhcpServerStateInit::onExit(DHCP::Server *parent)
 {
   ACE_TRACE("DhcpServerStateInit::onExit\n");
 }

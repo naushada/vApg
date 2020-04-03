@@ -8,7 +8,7 @@ libdhcps_a_SOURCES = src/DhcpServer.cc \
 										 src/DhcpServerStateDiscover.cc \
 										 src/DhcpServerStateInit.cc \
 										 src/DhcpServerStateIPAllocated.cc \
-										 src/DhcpServerStateLeaseExipre.cc \
+										 src/DhcpServerStateLeaseExpire.cc \
 										 src/DhcpServerStateOffer.cc \
 										 src/DhcpServerStateRelease.cc \
 										 src/DhcpServerStateRequestAck.cc \

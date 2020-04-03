@@ -3,10 +3,12 @@
 
 //#include "ipc.h"
 
+#include "DhcpServerState.h"
 #include <ace/Basic_Types.h>
 #include <ace/SString.h>
 
 class DhcpServerState;
+//class UniTimer;
 
 namespace DHCP
 {

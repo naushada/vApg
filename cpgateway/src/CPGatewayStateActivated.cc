@@ -18,7 +18,7 @@ virtual CPGatewayStateActivated::~CPGatewayStateActivated()
   ACE_TRACE("CPGatewayStateActivated::~CPGatewayStateActivated\n");
 }
 
-static CPGatewayStateActivated *CPGatewayStateActivated::instance()
+CPGatewayStateActivated *CPGatewayStateActivated::instance()
 {
   ACE_TRACE("CPGatewayStateActivated::instance\n");
 

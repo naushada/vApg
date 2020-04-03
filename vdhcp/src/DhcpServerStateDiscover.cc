@@ -1,14 +1,14 @@
 #ifndef __DHCP_SERVER_STATE_DISCOVER_CC__
 #define __DHCP_SERVER_STATE_DISCOVER_CC__
 
+#include "DhcpServerStateDiscover.h"
 #include "DhcpServer.h"
 #include "DhcpServerStateRequest.h"
-#include "DhcpServerStateDiscover.h"
 #include "ace/Log_Msg.h"
 
 DhcpServerStateDiscover *DhcpServerStateDiscover::m_instance = NULL;
 
-static DhcpServerStateDiscover *DhcpServerStateDiscover::instance()
+DhcpServerStateDiscover *DhcpServerStateDiscover::instance()
 {
   ACE_TRACE("DhcpServerStateDiscover::instance\n");
 
