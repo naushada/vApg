@@ -1,7 +1,7 @@
 #ifndef __DHCP_SERVER_STATE_CC__
 #define __DHCP_SERVER_STATE_CC__
 
-#include "commonIF.h"
+//#include "commonIF.h"
 #include "ace/Log_Msg.h"
 #include "DhcpServerState.h"
 #include "DhcpCommon.h"
@@ -85,6 +85,23 @@ ACE_UINT32 DhcpServerState::decline(DHCP::Server *parent, ACE_Byte *inPtr, ACE_U
   return(0);
 }
 
+/*Populating DHCP Header*/
+ACE_UINT32 DhcpServerState::populateDhcpHeader(DHCP::Server *parent, TransportIF::DHCP *dhcpHeader)
+{
+  parent->ctx().xid(dhcpHeader->xid);
+  parent->ctx().ciaddr(dhcpHeader->ciaddr);
+  parent->ctx().yiaddr(dhcpHeader->yiaddr);
+  parent->ctx().siaddr(dhcpHeader->siaddr);
+  parent->ctx().giaddr(dhcpHeader->giaddr);
+
+  parent->ctx().chaddrLen(dhcpHeader->hlen);
+  parent->ctx().chaddr(dhcpHeader->chaddr);
+
+  parent->ctx().sname(dhcpHeader->sname);
+
+  return(0);
+}
+
 /*RX*/
 ACE_UINT32 DhcpServerState::rx(DHCP::Server *parent, ACE_Byte *in, ACE_UINT32 inLen)
 {
@@ -93,6 +110,8 @@ ACE_UINT32 DhcpServerState::rx(DHCP::Server *parent, ACE_Byte *in, ACE_UINT32 in
   TransportIF::DHCP *dhcpHdr = (TransportIF::DHCP *)&in[sizeof(TransportIF::ETH) +
                                                         sizeof(TransportIF::IP) +
                                                         sizeof(TransportIF::UDP)];
+  populateDhcpHeader(parent, dhcpHdr);
+
   switch(dhcpHdr->op)
   {
     case RFC2131::DISCOVER:

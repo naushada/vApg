@@ -14,12 +14,16 @@
 DHCP::Server::Server()
 {
   //m_parent = parent;
+  /*context of DHCP Client's dhcp-header.*/
+  m_ctx = new RFC2131::DhcpCtx();
   setState(DhcpServerStateInit::instance());
 }
 
 DHCP::Server::~Server()
 {
   ACE_TRACE("DHCP::~Server\n");
+  delete m_ctx;
+  m_ctx = NULL;
 }
 
 void DHCP::Server::setState(DhcpServerState *st)
@@ -43,12 +47,12 @@ DhcpServerState *DHCP::Server::getState(void)
 
 void DHCP::Server::xid(ACE_UINT32 xid)
 {
-  m_xid = xid;
+  m_ctx->xid(xid);
 }
 
 ACE_UINT32 DHCP::Server::xid(void)
 {
-  return(m_xid);
+  return(m_ctx->xid());
 }
 
 ACE_INT32 DHCP::Server::process_timeout(const void *act)
@@ -56,6 +60,15 @@ ACE_INT32 DHCP::Server::process_timeout(const void *act)
   return(0);
 }
 
+RFC2131::DhcpCtx &DHCP::Server::ctx(void)
+{
+  return(*m_ctx);
+}
+
+DHCP::ElemDef &DHCP::Server::optionMap(void)
+{
+  return(*m_optionMap);
+}
 
 ACE_UINT32 DHCP::Server::start()
 {

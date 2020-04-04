@@ -1,6 +1,7 @@
 #ifndef __DHCP_SERVER_STATE_H__
 #define __DHCP_SERVER_STATE_H__
 
+#include "commonIF.h"
 #include "ace/SString.h"
 
 /*Forward declaration of a class belong to a namespace. */
@@ -35,6 +36,11 @@ public:
   virtual ACE_UINT32 decline(DHCP::Server *parent, ACE_Byte *inPtr, ACE_UINT32 inLen);
   /*RX  */
   ACE_UINT32 rx(DHCP::Server *parent, ACE_Byte *inPtr, ACE_UINT32 inLen);
+
+  /*Populate DHCP Header.*/
+  ACE_UINT32 populateDhcpHeader(DHCP::Server *parent, TransportIF::DHCP *dhcpHeader);
+  /*Populate DHCP Options.*/
+  //ACE_UINT32 populateDhcpOption(DHCP::Server *parent, TransportIF::DHCP &dhcpHeader);
 
 };
 

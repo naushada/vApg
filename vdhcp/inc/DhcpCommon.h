@@ -48,6 +48,142 @@ namespace RFC2131
   static const ACE_UINT8 OPTION_AUTO_CONFIGURE = 116;
   static const ACE_UINT8 OPTION_END = 255;
 
+  class DhcpCtx
+  {
+  private:
+    /*Transaction ID*/
+    ACE_UINT32 m_xid;
+    /*client ip address*/
+    ACE_UINT32 m_ciaddr;
+    /*assigned/newly allocated ip address*/
+    ACE_UINT32 m_yiaddr;
+    /*DHCP Server ip address*/
+    ACE_UINT32 m_siaddr;
+    /*For dhcp Agent, It's a gateway IP*/
+    ACE_UINT32 m_giaddr;
+    /*MAC Address length*/
+    ACE_UINT8 m_chaddrLen;
+    /*client mac address*/
+    ACE_Byte m_chaddr[64];
+    /*client's host name*/
+    ACE_Byte m_sname[64];
+
+  public:
+    DhcpCtx();
+    ~DhcpCtx();
+
+    ACE_UINT32 xid(void)
+    {
+      return(m_xid);
+    }
+    void xid(ACE_UINT32 xid)
+    {
+      m_xid = xid;
+    }
+
+    ACE_UINT32 ciaddr(void)
+    {
+      return(m_ciaddr);
+    }
+    void ciaddr(ACE_UINT32 ciaddr)
+    {
+      m_ciaddr = ciaddr;
+    }
+
+    ACE_UINT32 yiaddr(void)
+    {
+      return(m_yiaddr);
+    }
+    void yiaddr(ACE_UINT32 yiaddr)
+    {
+      m_yiaddr = yiaddr;
+    }
+
+    ACE_UINT32 siaddr(void)
+    {
+      return(m_siaddr);
+    }
+    void siaddr(ACE_UINT32 siaddr)
+    {
+      m_siaddr = siaddr;
+    }
+
+    ACE_UINT32 giaddr(void)
+    {
+      return(m_giaddr);
+    }
+    void giaddr(ACE_UINT32 giaddr)
+    {
+      m_giaddr = giaddr;
+    }
+
+    ACE_UINT32 chaddrLen(void)
+    {
+      return(m_chaddrLen);
+    }
+    void chaddrLen(ACE_UINT8 len)
+    {
+      m_chaddrLen = len;
+    }
+
+    ACE_Byte *chaddr(void)
+    {
+      return((ACE_Byte *)m_chaddr);
+    }
+    void chaddr(ACE_Byte *chaddr)
+    {
+      ACE_OS::memcpy((void *)m_chaddr, (const void *)chaddr, chaddrLen());
+    }
+
+    ACE_Byte *sname(void)
+    {
+      return((ACE_Byte *)m_sname);
+    }
+    void sname(ACE_Byte *sname)
+    {
+      ACE_OS::strcpy((char *)m_sname,(const char *)sname);
+    }
+  };
+
+  struct DhcpOption
+  {
+    DhcpOption();
+    ACE_UINT8 m_tag;
+    ACE_UINT8 m_len;
+    ACE_Byte m_value[255];
+
+    ACE_UINT8 getTag(void)
+    {
+      return(m_tag);
+    }
+
+    void setTag(ACE_UINT8 tag)
+    {
+      m_tag = tag;
+    }
+
+    ACE_UINT8 getLen(void)
+    {
+      return(m_len);
+    }
+
+    void setLen(ACE_UINT8 len)
+    {
+      m_len = len;
+    }
+
+    void setValue(ACE_Byte *value, ACE_UINT8 len)
+    {
+      setLen(len);
+      ACE_OS::memcpy((void *)m_value, (const void *)&value, (size_t)len);
+    }
+
+    ACE_Byte getValue(ACE_Byte *value)
+    {
+      ACE_OS::memcpy((void *)value, (const void *)m_value, (size_t)getLen());
+      return(getLen());
+    }
+  };
 }
 
 #endif /*__DHCP_COMMON_H__*/

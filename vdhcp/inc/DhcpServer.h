@@ -3,9 +3,12 @@
 
 #include "ipc.h"
 
+#include "DhcpCommon.h"
 #include "DhcpServerState.h"
 #include <ace/Basic_Types.h>
 #include <ace/SString.h>
+#include <ace/Hash_Map_Manager.h>
+#include <ace/Null_Mutex.h>
 
 class DhcpServerState;
 
@@ -21,6 +24,7 @@ namespace DHCP
   static const ACE_INT32 SUCCESS = 0;
   static const ACE_INT32 FAILURE = -1;
 
+  typedef ACE_Hash_Map_Manager<ACE_UINT8, RFC2131::DhcpOption*,ACE_Null_Mutex>ElemDef;
   class Server : public UniTimer
   {
   private:
@@ -28,11 +32,9 @@ namespace DHCP
     ACE_CString m_description;
     /*State Machine Instance.*/
     DhcpServerState *m_state;
-    /*IP Address Provided/allocated to the subscriber.*/
-    ACE_CString m_subscriberIP;
-    /*DHCP Transaction ID.*/
-    ACE_UINT32 m_xid;
-    //CPGateway *m_parent;
+    /*dhcp header is in context.*/
+    RFC2131::DhcpCtx *m_ctx;
+    ElemDef *m_optionMap;
 
   public:
     //Server(CPGateway *parent);
@@ -47,6 +49,9 @@ namespace DHCP
 
     void xid(ACE_UINT32 xid);
     ACE_UINT32 xid(void);
+
+    RFC2131::DhcpCtx &ctx(void);
+    ElemDef &optionMap(void);
 
     ACE_INT32 process_timeout(const void *act);
   };
