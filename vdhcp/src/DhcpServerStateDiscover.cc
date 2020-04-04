@@ -30,6 +30,7 @@ DhcpServerStateDiscover::DhcpServerStateDiscover()
 DhcpServerStateDiscover::~DhcpServerStateDiscover()
 {
   ACE_TRACE("DhcpServerStateDiscover::~DhcpServerStateDiscover\n");
+  delete m_instance;
 }
 
 void DhcpServerStateDiscover::onEntry(DHCP::Server *parent)
