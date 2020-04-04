@@ -1,14 +1,13 @@
 #ifndef __DHCP_SERVER_H__
 #define __DHCP_SERVER_H__
 
-//#include "ipc.h"
+#include "ipc.h"
 
 #include "DhcpServerState.h"
 #include <ace/Basic_Types.h>
 #include <ace/SString.h>
 
 class DhcpServerState;
-//class UniTimer;
 
 namespace DHCP
 {
@@ -22,8 +21,7 @@ namespace DHCP
   static const ACE_INT32 SUCCESS = 0;
   static const ACE_INT32 FAILURE = -1;
 
-  //class Server : public UniTimer
-  class Server
+  class Server : public UniTimer
   {
   private:
     ACE_Message_Block *m_mb;
@@ -54,7 +52,7 @@ namespace DHCP
   };
 }
 
-#if 0
+
 class CPServer : public UniIPC, public UniTimer
 {
 private:
@@ -82,6 +80,6 @@ public:
 
 };
 
-#endif 
+
 
 #endif /*__DHCP_SERVER_H__*/

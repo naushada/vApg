@@ -1,7 +1,6 @@
 #ifndef __DHCP_SERVER_CC__
 #define __DHCP_SERVER_CC__
 
-//#include "ipc.h"
 #include "ace/Reactor.h"
 #include "ace/Event_Handler.h"
 #include "ace/SString.h"

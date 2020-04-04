@@ -5,6 +5,8 @@
 #include <unordered_map>
 #include <list>
 
+#include <ace/Reactor.h>
+#include <ace/Event_Handler.h>
 #include "ace/INET_Addr.h"
 #include "ace/SOCK_Dgram.h"
 #include "ace/SString.h"
