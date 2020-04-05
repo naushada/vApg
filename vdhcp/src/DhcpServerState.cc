@@ -85,9 +85,59 @@ ACE_UINT32 DhcpServerState::decline(DHCP::Server *parent, ACE_Byte *inPtr, ACE_U
   return(0);
 }
 
+/*Populate DHCP Options.*/
+ACE_UINT32 DhcpServerState::populateDhcpOption(DHCP::Server *parent, ACE_Byte *dhcpOption,
+                                               ACE_UINT32 optionLen)
+{
+  ACE_TRACE("DhcpServerState::populateDhcpOption\n");
+
+  ACE_UINT32 offset = 0;
+
+  while(optionLen > 0)
+  {
+    switch(dhcpOption[offset])
+    {
+    case RFC2131::OPTION_END:
+      optionLen = 0;
+      break;
+    default:
+
+      RFC2131::DhcpOption *elm = NULL;
+      ACE_UINT8 tag = dhcpOption[offset];
+
+      if(parent->optionMap().find(tag, elm) != -1)
+      {
+        /*Not found in the MAP.*/
+        elm = new RFC2131::DhcpOption();
+
+        elm->m_tag = dhcpOption[offset++];
+        elm->m_len = dhcpOption[offset++];
+        ACE_OS::memcpy((void *)elm->m_value, (const void *)&dhcpOption[offset], elm->m_len);
+
+        offset += elm->m_len;
+        /*Add it into MAP now.*/
+        parent->optionMap().bind(elm->m_tag, elm);
+      }
+      else
+      {
+        /*Found in the Map , Update with new contents received now.*/
+        elm->m_tag = dhcpOption[offset++];
+        elm->m_len = dhcpOption[offset++];
+
+        ACE_OS::memcpy((void *)elm->m_value, (const void *)&dhcpOption[offset], elm->m_len);
+
+        offset += elm->m_len;
+      }
+    }
+  }
+
+  return(0);
+}
+
 /*Populating DHCP Header*/
 ACE_UINT32 DhcpServerState::populateDhcpHeader(DHCP::Server *parent, TransportIF::DHCP *dhcpHeader)
 {
+  ACE_TRACE("DhcpServerState::populateDhcpHeader\n");
   parent->ctx().xid(dhcpHeader->xid);
   parent->ctx().ciaddr(dhcpHeader->ciaddr);
   parent->ctx().yiaddr(dhcpHeader->yiaddr);
@@ -112,7 +162,30 @@ ACE_UINT32 DhcpServerState::rx(DHCP::Server *parent, ACE_Byte *in, ACE_UINT32 in
                                                         sizeof(TransportIF::UDP)];
   populateDhcpHeader(parent, dhcpHdr);
 
-  switch(dhcpHdr->op)
+  TransportIF::UDP *udpHdr = (TransportIF::UDP *)&in[sizeof(TransportIF::ETH) +
+                                                     sizeof(TransportIF::IP)];
+  /*Number of bytes in dhcpOptional Payload.*/
+  ACE_UINT32 dhcpOptionLen = ntohs(udpHdr->len) - sizeof(TransportIF::DHCP);
+
+  /*dhcpOption Offset.*/
+  ACE_Byte *dhcpOption = (ACE_Byte *)&in[sizeof(TransportIF::ETH)  +
+                                         sizeof(TransportIF::IP)   +
+                                         sizeof(TransportIF::UDP)  +
+                                         sizeof(TransportIF::DHCP) +
+                                         4/*Dhcp Cookies*/];
+
+  populateDhcpOption(parent, dhcpOption, dhcpOptionLen);
+
+  ACE_UINT8 msgType = 0;
+  RFC2131::DhcpOption *elm = NULL;
+
+  if(parent->optionMap().find(RFC2131::OPTION_MESSAGE_TYPE, elm) != -1)
+  {
+    msgType =(ACE_UINT8)elm->m_value[0];
+    ACE_DEBUG((LM_DEBUG, "messageType tag(%u) is found\n", msgType));
+  }
+
+  switch(msgType)
   {
     case RFC2131::DISCOVER:
       /*Kick the state Machine.*/
@@ -135,7 +208,7 @@ ACE_UINT32 DhcpServerState::rx(DHCP::Server *parent, ACE_Byte *in, ACE_UINT32 in
       parent->getState()->nack(parent, in, inLen);
       break;
     default:
-      ACE_ERROR((LM_ERROR, "%I the DHCP opcode %u is not supported\n", dhcpHdr->op));
+      ACE_ERROR((LM_ERROR, "%I the DHCP opcode %u is not supported\n", msgType));
       break;
   }
 

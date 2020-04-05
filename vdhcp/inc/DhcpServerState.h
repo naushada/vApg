@@ -40,7 +40,7 @@ public:
   /*Populate DHCP Header.*/
   ACE_UINT32 populateDhcpHeader(DHCP::Server *parent, TransportIF::DHCP *dhcpHeader);
   /*Populate DHCP Options.*/
-  //ACE_UINT32 populateDhcpOption(DHCP::Server *parent, TransportIF::DHCP &dhcpHeader);
+  ACE_UINT32 populateDhcpOption(DHCP::Server *parent, ACE_Byte *dhcpOption, ACE_UINT32 len);
 
 };
 

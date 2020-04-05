@@ -16,6 +16,8 @@ DHCP::Server::Server()
   //m_parent = parent;
   /*context of DHCP Client's dhcp-header.*/
   m_ctx = new RFC2131::DhcpCtx();
+
+  /*The start state is Init.*/
   setState(DhcpServerStateInit::instance());
 }
 

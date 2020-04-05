@@ -147,7 +147,13 @@ namespace RFC2131
 
   struct DhcpOption
   {
-    DhcpOption();
+    DhcpOption()
+    {
+      m_tag = 0;
+      m_len = 0;
+      ACE_OS::memset((void *)m_value, 0, sizeof(m_value));
+    }
+
     ACE_UINT8 m_tag;
     ACE_UINT8 m_len;
     ACE_Byte m_value[255];
