@@ -300,9 +300,9 @@ ACE_INT32 UniTimer::process_timeout(const void *act)
   return(0);
 }
 
-UniTimer::UniTimer()
+UniTimer::UniTimer(): ACE_Event_Handler()
 {
-  ACE_TRACE("UniTimer::UniTimer");
+  ACE_TRACE("UniTimer::UniTimer\n");
   ACE_Reactor::instance()->register_handler(this,
                                             ACE_Event_Handler::TIMER_MASK);
 }

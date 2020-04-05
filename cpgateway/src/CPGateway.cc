@@ -227,13 +227,18 @@ CPGateway::CPGateway(ACE_CString intfName)
 
   m_ethInterface = intfName;
 
-  /*Mske CPGateway state machine Activated State.*/
-  setState(CPGatewayStateActivated::instance());
-
   if(open() < 0)
   {
     ACE_ERROR((LM_ERROR, "%Iopen for ethernet Interface %s failed\n", intfName.c_str()));
   }
+
+  /*Make CPGateway state machine Activated State.*/
+  setState(CPGatewayStateActivated::instance());
+}
+
+CPGateway::~CPGateway()
+{
+  ACE_TRACE("CPGateway::~CPGateway\n");
 }
 
 ACE_UINT8 CPGateway::start()

@@ -25,7 +25,9 @@ namespace DHCP
   static const ACE_INT32 FAILURE = -1;
 
   typedef ACE_Hash_Map_Manager<ACE_UINT8, RFC2131::DhcpOption*,ACE_Null_Mutex>ElemDef;
-  class Server : public UniTimer
+
+  //class Server : public UniTimer
+  class Server
   {
   private:
     ACE_Message_Block *m_mb;

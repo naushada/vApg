@@ -69,8 +69,21 @@ namespace RFC2131
     ACE_Byte m_sname[64];
 
   public:
-    DhcpCtx();
-    ~DhcpCtx();
+    DhcpCtx()
+    {
+      m_xid = 0;
+      m_ciaddr = 0;
+      m_yiaddr = 0;
+      m_siaddr = 0;
+      m_giaddr = 0;
+      m_chaddrLen = 0;
+      ACE_OS::memset((void *)m_chaddr, 0, sizeof(m_chaddr));
+      ACE_OS::memset((void *)m_sname, 0, sizeof(m_sname));
+    }
+
+    ~DhcpCtx()
+    {
+    }
 
     ACE_UINT32 xid(void)
     {

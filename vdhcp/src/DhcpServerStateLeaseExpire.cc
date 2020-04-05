@@ -57,6 +57,13 @@ ACE_UINT32 DhcpServerStateLeaseExpire::leaseTO(DHCP::Server &parent)
   return(0);
 }
 
+DhcpServerStateLeaseExpire::DhcpServerStateLeaseExpire()
+{
+  ACE_TRACE("DhcpServerStateLeaseExpire::DhcpServerStateLeaseExpire\n");
+}
 
-
+DhcpServerStateLeaseExpire::~DhcpServerStateLeaseExpire()
+{
+  ACE_TRACE("DhcpServerStateLeaseExpire::~DhcpServerStateLeaseExpire\n");
+}
 #endif /*__DHCP_SERVER_STATE_LEASE_EXPIRE__CC__*/

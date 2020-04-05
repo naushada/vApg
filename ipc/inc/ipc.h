@@ -75,8 +75,8 @@ class UniTimer : public ACE_Event_Handler
     UniTimer();
     virtual ~UniTimer();
 
-    virtual ACE_INT32 handle_timeout(ACE_Time_Value &tv,
-                                     const void *act=0);
+    ACE_INT32 handle_timeout(ACE_Time_Value &tv,
+                             const void *act=0);
 
     long start_timer(ACE_UINT32 delay, const void *act,
                      ACE_Time_Value interval);

@@ -23,7 +23,7 @@ DHCP::Server::Server()
 
 DHCP::Server::~Server()
 {
-  ACE_TRACE("DHCP::~Server\n");
+  ACE_TRACE("DHCP::Server::~Server\n");
   delete m_ctx;
   m_ctx = NULL;
 }
@@ -59,6 +59,7 @@ ACE_UINT32 DHCP::Server::xid(void)
 
 ACE_INT32 DHCP::Server::process_timeout(const void *act)
 {
+  ACE_TRACE("DHCP::Server::process_timeout\n");
   return(0);
 }
 
