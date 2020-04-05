@@ -34,16 +34,16 @@ void CPGateway::setState(CPGatewayState *st)
   ACE_TRACE("CPGateway::setState\n");
 
   if(m_state)
-    getState()->onExit(this);
+    getState().onExit(*this);
 
   m_state = st;
-  getState()->onEntry(this);
+  getState().onEntry(*this);
 }
 
-CPGatewayState *CPGateway::getState(void)
+CPGatewayState &CPGateway::getState(void)
 {
   ACE_TRACE("CPGateway::getState\n");
-  return(m_state);
+  return(*m_state);
 }
 
 int CPGateway::handle_input(ACE_HANDLE fd)
@@ -67,11 +67,7 @@ int CPGateway::handle_input(ACE_HANDLE fd)
   m_mb->wr_ptr(len);
 
   /*Check wheather CPGateway is administrative locked/error state.*/
-  if(getState())
-  {
-    getState()->processRequest(this, (ACE_Byte *)m_mb->rd_ptr(), m_mb->length());
-    return(0);
-  }
+  getState().processRequest(*this, (ACE_Byte *)m_mb->rd_ptr(), m_mb->length());
 
   ACE_DEBUG((LM_INFO, "%I CPGateway state is locked/error state\n"));
   return(0);
@@ -214,6 +210,15 @@ CPGateway::CPGateway(ACE_CString intfName, ACE_CString ipAddr,
                      ACE_CString nodeTag)
 {
   ACE_TRACE("CPGateway::CPGateway\n");
+  m_ethInterface = intfName;
+
+  /*Mske CPGateway state machine Activated State.*/
+  setState(CPGatewayStateActivated::instance());
+
+  if(open() < 0)
+  {
+    ACE_ERROR((LM_ERROR, "%Iopen for ethernet Interface %s failed\n", intfName.c_str()));
+  }
 }
 
 CPGateway::CPGateway(ACE_CString intfName)
@@ -257,18 +262,28 @@ ACE_UINT8 CPGateway::stop()
 
 ACE_UINT8 CPGateway::isSubscriberFound(ACE_CString macAddress)
 {
-  if(m_subscriberMap.find(macAddress) < 0)
+  if(m_subscriberMap.find(macAddress) == -1)
   {
     ACE_DEBUG((LM_ERROR, "This client %s is not found\n", macAddress.c_str()));
+    return(0);
   }
 
-  return(0);
+  return(1);
 }
 
 ACE_UINT8 CPGateway::createSubscriber(ACE_CString macAddress)
 {
 
-  DHCP::Server *sess = new DHCP::Server();
+  DHCP::Server *sess = NULL;
+  ACE_NEW_NORETURN(sess, DHCP::Server());
+  /*let STL do the memory management for stack object.*/
+  m_subscriberMap.bind(macAddress, sess);
+
+  return(0);
+}
+
+ACE_UINT8 CPGateway::addSubscriber(DHCP::Server *sess, ACE_CString macAddress)
+{
   /*let STL do the memory management for stack object.*/
   m_subscriberMap.bind(macAddress, sess);
 
@@ -278,22 +293,12 @@ ACE_UINT8 CPGateway::createSubscriber(ACE_CString macAddress)
 DHCP::Server *CPGateway::getSubscriber(ACE_CString macAddress)
 {
   DHCP::Server *sess = NULL;
-  if(m_subscriberMap.find(macAddress, sess) < 0)
+  if(m_subscriberMap.find(macAddress, sess) == -1)
   {
     ACE_DEBUG((LM_ERROR, "No session for client %s is found\n", macAddress.c_str()));
   }
 
   return(sess);
-}
-
-ACE_UINT32 CPGateway::processDhcpRequest(const char *inPtr, ACE_UINT32 inLen)
-{
-
-  ACE_CString srcMac((const char *)&inPtr[TransportIF::ETH_ALEN], TransportIF::ETH_ALEN);
-
-  DHCP::Server *sess = getSubscriber(srcMac);
-  sess->getState()->rx(sess, (ACE_Byte *)inPtr, inLen);
-  return(0);
 }
 
 int main(int argc, char *argv[])
@@ -306,8 +311,11 @@ int main(int argc, char *argv[])
    * argv[3] = instanceId
    * argv[4] = nodeName
    * */
-  CPGateway *cp = new CPGateway(argv[0], argv[1], ACE_OS::atoi(argv[2]),
-                                ACE_OS::atoi(argv[3]), argv[4]);
+  CPGateway *cp = NULL;
+  ACE_NEW_NORETURN(cp, CPGateway(argv[0], argv[1],
+                                 ACE_OS::atoi(argv[2]),
+                                 ACE_OS::atoi(argv[3]),
+                                 argv[4]));
 
   if(!cp->start())
   {

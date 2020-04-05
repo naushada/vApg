@@ -24,7 +24,7 @@ CPGatewayState::~CPGatewayState()
   ACE_TRACE("CPGatewayState::~CPGatewayState\n");
 }
 
-ACE_UINT32 CPGatewayState::processRequest(CPGateway *parent,
+ACE_UINT32 CPGatewayState::processRequest(CPGateway &parent,
                                           ACE_Byte *in,
                                           ACE_UINT32 inLen)
 {
@@ -51,17 +51,21 @@ ACE_UINT32 CPGatewayState::processRequest(CPGateway *parent,
                                                               sizeof(TransportIF::UDP)];
 
         ACE_CString haddr((const char *)dhcpHdr->chaddr, TransportIF::ETH_ALEN);
-        if(parent->isSubscriberFound(haddr))
+        ACE_DEBUG((LM_DEBUG, "%I chaddr is %s\n", haddr.c_str()));
+
+        if(parent.isSubscriberFound(haddr))
         {
           ACE_DEBUG((LM_INFO, "%I chaddr (%s) is found\n", haddr.c_str()));
-          DHCP::Server *sess = parent->getSubscriber(haddr);
-          sess->getState()->rx(sess, in, inLen);
+          DHCP::Server *sess = parent.getSubscriber(haddr);
+          sess->getState().rx(*sess, in, inLen);
         }
         else
         {
-          DHCP::Server *sess = new DHCP::Server();
-          parent->createSubscriber(haddr);
-          sess->getState()->rx(sess, in, inLen);
+          DHCP::Server *sess = NULL;
+          ACE_NEW_NORETURN(sess, DHCP::Server());
+
+          parent.addSubscriber(sess, haddr);
+          sess->getState().rx(*sess, in, inLen);
         }
 
       }
@@ -79,24 +83,24 @@ ACE_UINT32 CPGatewayState::processRequest(CPGateway *parent,
   return(0);
 }
 
-ACE_UINT32 CPGatewayState::lock(CPGateway *parent)
+ACE_UINT32 CPGatewayState::lock(CPGateway &parent)
 {
   ACE_TRACE("CPGatewayState::lock\n");
   return(0);
 }
 
-ACE_UINT32 CPGatewayState::unlock(CPGateway *parent)
+ACE_UINT32 CPGatewayState::unlock(CPGateway &parent)
 {
   ACE_TRACE("CPGatewayState::unlock\n");
   return(0);
 }
 
-void CPGatewayState::onEntry(CPGateway *parent)
+void CPGatewayState::onEntry(CPGateway &parent)
 {
   ACE_TRACE("CPGatewayState::onEntry\n");
 }
 
-void CPGatewayState::onExit(CPGateway *parent)
+void CPGatewayState::onExit(CPGateway &parent)
 {
   ACE_TRACE("CPGatewayState::onExit\n");
 }

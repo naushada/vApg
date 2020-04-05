@@ -11,13 +11,13 @@ private:
 public:
   ~OfferST();
   static OfferST *instance();
-  void onEntry(DHCP::Server *parent);
-  void onExit(DHCP::Server *parent);
-  ACE_UINT32 offer(DHCP::Server *parent);
-  ACE_UINT32 discover(DHCP::Server *parent);
-  ACE_UINT32 request(DHCP::Server *parent);
-  ACE_UINT32 requestAck(DHCP::Server *parent);
-  ACE_UINT32 leaseTO(DHCP::Server *parent);
+  void onEntry(DHCP::Server &parent);
+  void onExit(DHCP::Server &parent);
+  ACE_UINT32 offer(DHCP::Server &parent);
+  ACE_UINT32 discover(DHCP::Server &parent);
+  ACE_UINT32 request(DHCP::Server &parent);
+  ACE_UINT32 requestAck(DHCP::Server &parent);
+  ACE_UINT32 leaseTO(DHCP::Server &parent);
 
 };
 

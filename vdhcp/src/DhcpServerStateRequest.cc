@@ -30,29 +30,29 @@ DhcpServerStateRequest::~DhcpServerStateRequest()
 {
 }
 
-void DhcpServerStateRequest::onEntry(DHCP::Server *parent)
+void DhcpServerStateRequest::onEntry(DHCP::Server &parent)
 {
   ACE_TRACE("DhcpServerStateRequest::onEntry\n");
 }
 
-void DhcpServerStateRequest::onExit(DHCP::Server *parent)
+void DhcpServerStateRequest::onExit(DHCP::Server &parent)
 {
   ACE_TRACE("DhcpServerStateRequest::onExit\n");
 }
 
-ACE_UINT32 DhcpServerStateRequest::offer(DHCP::Server *parent, ACE_Byte *in, ACE_UINT32 inLen)
+ACE_UINT32 DhcpServerStateRequest::offer(DHCP::Server &parent, ACE_Byte *in, ACE_UINT32 inLen)
 {
   ACE_TRACE("DhcpServerStateRequest::offer\n");
   return(0);
 }
 
-ACE_UINT32 DhcpServerStateRequest::discover(DHCP::Server *parent, ACE_Byte *in, ACE_UINT32 inLen)
+ACE_UINT32 DhcpServerStateRequest::discover(DHCP::Server &parent, ACE_Byte *in, ACE_UINT32 inLen)
 {
   ACE_TRACE("DhcpServerStateRequest::discover\n");
   return(0);
 }
 
-ACE_UINT32 DhcpServerStateRequest::request(DHCP::Server *parent, ACE_Byte *in, ACE_UINT32 inLen)
+ACE_UINT32 DhcpServerStateRequest::request(DHCP::Server &parent, ACE_Byte *in, ACE_UINT32 inLen)
 {
   ACE_TRACE("DhcpServerStateRequest::request\n");
 
@@ -60,17 +60,17 @@ ACE_UINT32 DhcpServerStateRequest::request(DHCP::Server *parent, ACE_Byte *in, A
 
 
   /*Move to next State.*/
-  parent->setState(DhcpServerStateLeaseExpire::instance());
+  parent.setState(DhcpServerStateLeaseExpire::instance());
   return(0);
 }
 
-ACE_UINT32 DhcpServerStateRequest::requestAck(DHCP::Server *parent, ACE_Byte *in, ACE_UINT32 inLen)
+ACE_UINT32 DhcpServerStateRequest::requestAck(DHCP::Server &parent, ACE_Byte *in, ACE_UINT32 inLen)
 {
   ACE_TRACE("DhcpServerStateRequest::requestAck\n");
   return(0);
 }
 
-ACE_UINT32 DhcpServerStateRequest::leaseTO(DHCP::Server *parent, ACE_Byte *in, ACE_UINT32 inLen)
+ACE_UINT32 DhcpServerStateRequest::leaseTO(DHCP::Server &parent, ACE_Byte *in, ACE_UINT32 inLen)
 {
   ACE_TRACE("DhcpServerStateRequest::leaseTO\n");
   return(0);

@@ -32,26 +32,26 @@ CPGatewayStateActivated *CPGatewayStateActivated::instance()
   return(m_instance);
 }
 
-void CPGatewayStateActivated::onEntry(CPGateway *parent)
+void CPGatewayStateActivated::onEntry(CPGateway &parent)
 {
   ACE_TRACE("CPGatewayStateActivated::onEntry\n");
 
 }
 
-void CPGatewayStateActivated::onExit(CPGateway *parent)
+void CPGatewayStateActivated::onExit(CPGateway &parent)
 {
   ACE_TRACE("CPGatewayStateActivated::onExit\n");
 
 }
 
-ACE_UINT32 CPGatewayStateActivated::lock(CPGateway *parent)
+ACE_UINT32 CPGatewayStateActivated::lock(CPGateway &parent)
 {
   ACE_TRACE("CPGatewayStateActivated::lock\n");
 
   return(0);
 }
 
-ACE_UINT32 CPGatewayStateActivated::unlock(CPGateway *parent)
+ACE_UINT32 CPGatewayStateActivated::unlock(CPGateway &parent)
 {
   ACE_TRACE("CPGatewayStateActivated::unlock\n");
 

@@ -33,30 +33,30 @@ DhcpServerStateDiscover::~DhcpServerStateDiscover()
   delete m_instance;
 }
 
-void DhcpServerStateDiscover::onEntry(DHCP::Server *parent)
+void DhcpServerStateDiscover::onEntry(DHCP::Server &parent)
 {
   ACE_TRACE("DhcpServerStateDiscover::onEntry\n");
 }
 
-void DhcpServerStateDiscover::onExit(DHCP::Server *parent)
+void DhcpServerStateDiscover::onExit(DHCP::Server &parent)
 {
   ACE_TRACE("DhcpServerStateDiscover::onExit\n");
 }
 
-ACE_UINT32 DhcpServerStateDiscover::offer(DHCP::Server *parent, ACE_Byte *inPtr, ACE_UINT32 inLen)
+ACE_UINT32 DhcpServerStateDiscover::offer(DHCP::Server &parent, ACE_Byte *inPtr, ACE_UINT32 inLen)
 {
   ACE_TRACE("DhcpServerStateDiscover::offer\n");
   return(0);
 }
 
-ACE_UINT32 DhcpServerStateDiscover::discover(DHCP::Server *parent, ACE_Byte *inPtr, ACE_UINT32 inLen)
+ACE_UINT32 DhcpServerStateDiscover::discover(DHCP::Server &parent, ACE_Byte *inPtr, ACE_UINT32 inLen)
 {
   ACE_TRACE("DhcpServerStateDiscover::discover\n");
 
   /*Prelare DHCP Offer Message .*/
 
   /*Move to next state to process DHCP Request.*/
-  parent->setState(DhcpServerStateRequest::instance());
+  parent.setState(DhcpServerStateRequest::instance());
   return(0);
 }
 

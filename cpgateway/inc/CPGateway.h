@@ -48,13 +48,13 @@ class CPGateway : public ACE_Event_Handler
     void set_handle(ACE_HANDLE handle);
 
     void setState(CPGatewayState *sm);
-    CPGatewayState *getState(void);
+    CPGatewayState &getState(void);
 
     ACE_UINT8 isSubscriberFound(ACE_CString macAddress);
     ACE_UINT8 createSubscriber(ACE_CString macAddress);
+    ACE_UINT8 addSubscriber(DHCP::Server *sess, ACE_CString macAddress);
     DHCP::Server *getSubscriber(ACE_CString macAddress);
     ACE_UINT8 deleteSubscriber(ACE_CString macAddress);
-    ACE_UINT32 processDhcpRequest(const char *inPtr, ACE_UINT32 inLen);
 
     ACE_UINT8 isSubscriberAuthenticated(ACE_CString macAddress);
 };

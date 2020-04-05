@@ -34,17 +34,17 @@ void DHCP::Server::setState(DhcpServerState *st)
 
   if(m_state)
   {
-    m_state->onExit(this);
+    m_state->onExit(*this);
   }
 
   m_state = st;
-  m_state->onEntry(this);
+  m_state->onEntry(*this);
 }
 
-DhcpServerState *DHCP::Server::getState(void)
+DhcpServerState &DHCP::Server::getState(void)
 {
   ACE_TRACE("DHCP::Server::getState\n");
-  return(m_state);
+  return(*m_state);
 }
 
 void DHCP::Server::xid(ACE_UINT32 xid)

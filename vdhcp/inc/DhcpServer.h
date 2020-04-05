@@ -42,7 +42,7 @@ namespace DHCP
     virtual ~Server();
 
     void setState(DhcpServerState *st);
-    DhcpServerState *getState(void);
+    DhcpServerState &getState(void);
 
     ACE_UINT32 start();
     ACE_UINT32 stop();

@@ -17,41 +17,41 @@ RequestAckST *RequestAckST::instance()
   return(m_instance);
 }
 
-void RequestAckST::onEntry(DHCP::Server *parent)
+void RequestAckST::onEntry(DHCP::Server &parent)
 {
   ACE_TRACE("RequestAckST::onEntry");
 }
 
-void RequestAckST::onExit(DHCP::Server *parent)
+void RequestAckST::onExit(DHCP::Server &parent)
 {
   ACE_TRACE("RequestAckST::onExit");
 }
 
-ACE_UINT32 RequestAckST::offer(DHCP::Server *parent)
+ACE_UINT32 RequestAckST::offer(DHCP::Server &parent)
 {
   ACE_TRACE("RequestAckST::offer");
   return(0);
 }
 
-ACE_UINT32 RequestAckST::discover(DHCP::Server *parent)
+ACE_UINT32 RequestAckST::discover(DHCP::Server &parent)
 {
   ACE_TRACE("RequestAckST::discover");
   return(0);
 }
 
-ACE_UINT32 RequestAckST::request(DHCP::Server *parent)
+ACE_UINT32 RequestAckST::request(DHCP::Server &parent)
 {
   ACE_TRACE("RequestAckST::request");
   return(0);
 }
 
-ACE_UINT32 RequestAckST::requestAck(DHCP::Server *parent)
+ACE_UINT32 RequestAckST::requestAck(DHCP::Server &parent)
 {
   ACE_TRACE("RequestAckST::requestAck");
   return(0);
 }
 
-ACE_UINT32 RequestAckST::leaseTO(DHCP::Server *parent)
+ACE_UINT32 RequestAckST::leaseTO(DHCP::Server &parent)
 {
   ACE_TRACE("RequestAckST::leaseTO");
   return(0);

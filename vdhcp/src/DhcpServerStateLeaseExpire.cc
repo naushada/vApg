@@ -17,41 +17,41 @@ DhcpServerStateLeaseExpire *DhcpServerStateLeaseExpire::instance()
   return(m_instance);
 }
 
-void DhcpServerStateLeaseExpire::onEntry(DHCP::Server *parent)
+void DhcpServerStateLeaseExpire::onEntry(DHCP::Server &parent)
 {
   ACE_TRACE("DhcpServerStateLeaseExpire::onEntry");
 }
 
-void DhcpServerStateLeaseExpire::onExit(DHCP::Server *parent)
+void DhcpServerStateLeaseExpire::onExit(DHCP::Server &parent)
 {
   ACE_TRACE("DhcpServerStateLeaseExpire::onExit");
 }
 
-ACE_UINT32 DhcpServerStateLeaseExpire::offer(DHCP::Server *parent)
+ACE_UINT32 DhcpServerStateLeaseExpire::offer(DHCP::Server &parent)
 {
   ACE_TRACE("DhcpServerStateLeaseExpire::offer");
   return(0);
 }
 
-ACE_UINT32 DhcpServerStateLeaseExpire::discover(DHCP::Server *parent)
+ACE_UINT32 DhcpServerStateLeaseExpire::discover(DHCP::Server &parent)
 {
   ACE_TRACE("DhcpServerStateLeaseExpire::discover");
   return(0);
 }
 
-ACE_UINT32 DhcpServerStateLeaseExpire::request(DHCP::Server *parent)
+ACE_UINT32 DhcpServerStateLeaseExpire::request(DHCP::Server &parent)
 {
   ACE_TRACE("DhcpServerStateLeaseExpire::request");
   return(0);
 }
 
-ACE_UINT32 DhcpServerStateLeaseExpire::requestAck(DHCP::Server *parent)
+ACE_UINT32 DhcpServerStateLeaseExpire::requestAck(DHCP::Server &parent)
 {
   ACE_TRACE("DhcpServerStateLeaseExpire::requestAck");
   return(0);
 }
 
-ACE_UINT32 DhcpServerStateLeaseExpire::leaseTO(DHCP::Server *parent)
+ACE_UINT32 DhcpServerStateLeaseExpire::leaseTO(DHCP::Server &parent)
 {
   ACE_TRACE("DhcpServerStateLeaseExpire::leaseTO");
   return(0);

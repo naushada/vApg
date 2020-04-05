@@ -16,31 +16,31 @@ public:
   DhcpServerState();
   ~DhcpServerState();
 
-  virtual void onEntry(DHCP::Server *parent);
-  virtual void onExit(DHCP::Server *parent);
+  virtual void onEntry(DHCP::Server &parent);
+  virtual void onExit(DHCP::Server &parent);
   /*DHCP Offer */
-  virtual ACE_UINT32 offer(DHCP::Server *parent, ACE_Byte *inPtr, ACE_UINT32 inLen);
+  virtual ACE_UINT32 offer(DHCP::Server &parent, ACE_Byte *inPtr, ACE_UINT32 inLen);
   /*DHCP Discover */
-  virtual ACE_UINT32 discover(DHCP::Server *parent, ACE_Byte *inPtr, ACE_UINT32 inLen);
+  virtual ACE_UINT32 discover(DHCP::Server &parent, ACE_Byte *inPtr, ACE_UINT32 inLen);
   /*DHCP Request */
-  virtual ACE_UINT32 request(DHCP::Server *parent, ACE_Byte *inPtr, ACE_UINT32 inLen);
+  virtual ACE_UINT32 request(DHCP::Server &parent, ACE_Byte *inPtr, ACE_UINT32 inLen);
   /*DHCP Request Ack */
-  virtual ACE_UINT32 requestAck(DHCP::Server *parent, ACE_Byte *inPtr, ACE_UINT32 inLen);
+  virtual ACE_UINT32 requestAck(DHCP::Server &parent, ACE_Byte *inPtr, ACE_UINT32 inLen);
   /*Lease Time Out */
-  virtual ACE_UINT32 leaseTO(DHCP::Server *parent, ACE_Byte *inPtr, ACE_UINT32 inLen);
+  virtual ACE_UINT32 leaseTO(DHCP::Server &parent, ACE_Byte *inPtr, ACE_UINT32 inLen);
   /*Release  */
-  virtual ACE_UINT32 release(DHCP::Server *parent, ACE_Byte *inPtr, ACE_UINT32 inLen);
+  virtual ACE_UINT32 release(DHCP::Server &parent, ACE_Byte *inPtr, ACE_UINT32 inLen);
   /*NACK  */
-  virtual ACE_UINT32 nack(DHCP::Server *parent, ACE_Byte *inPtr, ACE_UINT32 inLen);
+  virtual ACE_UINT32 nack(DHCP::Server &parent, ACE_Byte *inPtr, ACE_UINT32 inLen);
   /*decline  */
-  virtual ACE_UINT32 decline(DHCP::Server *parent, ACE_Byte *inPtr, ACE_UINT32 inLen);
+  virtual ACE_UINT32 decline(DHCP::Server &parent, ACE_Byte *inPtr, ACE_UINT32 inLen);
   /*RX  */
-  ACE_UINT32 rx(DHCP::Server *parent, ACE_Byte *inPtr, ACE_UINT32 inLen);
+  ACE_UINT32 rx(DHCP::Server &parent, ACE_Byte *inPtr, ACE_UINT32 inLen);
 
   /*Populate DHCP Header.*/
-  ACE_UINT32 populateDhcpHeader(DHCP::Server *parent, TransportIF::DHCP *dhcpHeader);
+  ACE_UINT32 populateDhcpHeader(DHCP::Server &parent, TransportIF::DHCP *dhcpHeader);
   /*Populate DHCP Options.*/
-  ACE_UINT32 populateDhcpOption(DHCP::Server *parent, ACE_Byte *dhcpOption, ACE_UINT32 len);
+  ACE_UINT32 populateDhcpOption(DHCP::Server &parent, ACE_Byte *dhcpOption, ACE_UINT32 len);
 
 };
 
