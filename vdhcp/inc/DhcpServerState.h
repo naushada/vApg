@@ -45,7 +45,7 @@ public:
 
   /*build Response.*/
   ACE_Message_Block &buildResponse(DHCP::Server &parent, ACE_Byte *in, ACE_UINT32 len);
-  ACE_UINT16 chksumUDP(void *in);
+  ACE_UINT16 chksumUDP(TransportIF::IP *in);
   ACE_UINT16 chksumIP(void *in, ACE_UINT32 inLen);
 };
 

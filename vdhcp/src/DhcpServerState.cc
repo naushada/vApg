@@ -117,9 +117,42 @@ ACE_UINT16 DhcpServerState::chksumIP(void *in, ACE_UINT32 inLen)
   return(~sum);
 }
 
-ACE_UINT16 DhcpServerState::chksumUDP(void *in)
+ACE_UINT16 DhcpServerState::chksumUDP(TransportIF::IP *ip)
 {
-  return(0);
+  ACE_Byte *pseudoPtr = NULL;
+  ACE_UINT16 ipHdrLen = 0;
+  ACE_UINT16 tmpLen = 0;
+  ACE_UINT16 offset = 0;
+  ACE_UINT16 chksum = 0;
+
+  ipHdrLen = ip->len * 4;
+  tmpLen = ntohs(ip->tot_len) - ipHdrLen + 12;
+  ACE_NEW_NORETURN(pseudoPtr, ACE_Byte(tmpLen));
+
+  ACE_OS::memset((void *)pseudoPtr, 0, tmpLen);
+  *((ACE_UINT32 *)&pseudoPtr[offset]) = ip->src_ip;
+  offset += 4;
+  *((ACE_UINT32 *)&pseudoPtr[offset]) = ip->dest_ip;
+  offset += 4;
+  /*reserved Byte*/
+  pseudoPtr[offset] = 0;
+  offset += 1;
+  /*Protocol UDP*/
+  pseudoPtr[offset] = 17;
+  offset += 1;
+  /*length of UDP Header + Payload.*/
+  pseudoPtr[offset] = htons(ip->tot_len - ipHdrLen);
+  offset += 2;
+
+  ACE_OS::memcpy((void *)&pseudoPtr[offset],
+                 (const void *)&pseudoPtr[ipHdrLen],
+                 ntohs(ip->tot_len - ipHdrLen));
+
+  offset += ntohs(ip->tot_len - ipHdrLen);
+  chksum = chksumIP((void *)pseudoPtr, offset);
+  delete pseudoPtr;
+
+  return(chksum);
 }
 
 ACE_Message_Block &DhcpServerState::buildResponse(DHCP::Server &parent, ACE_Byte *in, ACE_UINT32 len)

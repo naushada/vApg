@@ -20,6 +20,7 @@ DhcpServerStateLeaseExpire *DhcpServerStateLeaseExpire::instance()
 void DhcpServerStateLeaseExpire::onEntry(DHCP::Server &parent)
 {
   ACE_TRACE("DhcpServerStateLeaseExpire::onEntry");
+  /*A timer shall be started for leaseExpiry.*/
 }
 
 void DhcpServerStateLeaseExpire::onExit(DHCP::Server &parent)
