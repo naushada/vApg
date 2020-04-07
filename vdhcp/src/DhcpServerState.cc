@@ -85,6 +85,308 @@ ACE_UINT32 DhcpServerState::decline(DHCP::Server &parent, ACE_Byte *inPtr, ACE_U
   return(0);
 }
 
+ACE_UINT16 DhcpServerState::chksumIP(void *in, ACE_UINT32 inLen)
+{
+  ACE_UINT32 sum = 0;
+  const ACE_UINT16 *ip = (ACE_UINT16 *)in;
+
+  while(inLen > 1)
+  {
+    sum += *ip++;
+
+    if(sum & 0x80000000)
+    {
+      sum = (sum & 0xFFFF) + (sum >> 16);
+    }
+
+    inLen -= 2;
+  }
+
+  if(inLen)
+  {
+    sum += (ACE_UINT32) *(ACE_Byte *)ip;
+  }
+
+  /*wrapping up into 2 bytes.*/
+  while(sum >> 16)
+  {
+    sum = (sum & 0xFFFF) + (sum >> 16);
+  }
+
+  /*1's complement.*/
+  return(~sum);
+}
+
+ACE_UINT16 DhcpServerState::chksumUDP(void *in)
+{
+  return(0);
+}
+
+ACE_Message_Block &DhcpServerState::buildResponse(DHCP::Server &parent, ACE_Byte *in, ACE_UINT32 len)
+{
+  ACE_Message_Block *mb = NULL;
+  ACE_Byte bmac[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+  ACE_UINT32 offset = 0;
+  ACE_Byte *rsp = NULL;
+
+  ACE_NEW_NORETURN(mb, ACE_Message_Block(2048));
+
+  rsp = (ACE_Byte *)mb->wr_ptr();
+
+  TransportIF::ETH *eth = (TransportIF::ETH *)rsp;
+  TransportIF::IP *ip = (TransportIF::IP *)&rsp[sizeof(TransportIF::ETH)];
+
+  TransportIF::UDP *udp = (TransportIF::UDP *)&rsp[sizeof(TransportIF::ETH) +
+                                                   sizeof(TransportIF::IP)];
+
+  TransportIF::DHCP *dhcp = (TransportIF::DHCP *)&rsp[sizeof(TransportIF::ETH) +
+                                                      sizeof(TransportIF::IP)  +
+                                                      sizeof(TransportIF::UDP)];
+
+  /*Populating Ethernet Header.*/
+  ACE_OS::memcpy((void *)eth->src, (const void *)in, TransportIF::ETH_ALEN);
+  ACE_OS::memcpy((void *)eth->dest, (const void *)&in[TransportIF::ETH_ALEN], TransportIF::ETH_ALEN);
+  eth->proto = htons(TransportIF::ETH_P_IP);
+
+  /*Populating IP Header.*/
+  ip->len = 0x5;
+  ip->ver = 0x4;
+  ip->tos = 0x00;
+  /*length shall be updated later. header length + Payload Len.*/
+  ip->tot_len = 0x0000;
+  ip->id = htons(0x00);
+  /*bit0 -R(Reserved), bit1 - DF(Don't Fragment). bit2 - MF(More Fragment)*/
+  ip->flags = htons(1 << 14);
+  /*Maximum number of hops.*/
+  ip->ttl = 0x10;
+  /*1 - ICMP, 2 - IGMP, 6 - TCP, 17 - UDP*/
+  ip->proto = 0x11;
+  ip->chksum = 0x0000;
+  ip->src_ip = htonl(0x00);
+  ip->dest_ip = htonl(0x00);
+
+  /*Populating UDP Header.*/
+  udp->src_port = htons(67);
+  udp->dest_port = htons(68);
+  udp->len = 0x0000;
+  udp->chksum = 0x0000;
+
+  /*Populating DHCP Header.*/
+
+  /*Boot Reply.*/
+  dhcp->op = 0x02;
+  /*ETHERNET_10Mb*/
+  dhcp->htype = 0x1;
+  dhcp->hlen = parent.ctx().chaddrLen();
+  /*decremented at every router and is discarded when it becomes 0*/
+  dhcp->hops = 0x5;
+  dhcp->xid = parent.ctx().xid();
+  dhcp->secs = 0x00;
+  dhcp->flags = 0x00;
+  /*This will be filled by DHCP Client.*/
+  dhcp->ciaddr = 0x00;
+  /*Assigining IP Address to DHCP Client.*/
+  dhcp->yiaddr = 0x00;
+  dhcp->giaddr = 0x00;
+
+  ACE_OS::memcpy((void *)dhcp->chaddr,
+                 (const void *)parent.ctx().chaddr(),
+                 (size_t)parent.ctx().chaddrLen());
+
+  /*Fill DHCP Server Host Name.*/
+
+  /*Filling up the dhcp option.*/
+  offset = sizeof(TransportIF::ETH) + sizeof(TransportIF::IP) +
+           sizeof(TransportIF::UDP) + sizeof(TransportIF::DHCP);
+
+  ACE_Byte cookie[] = {0x63, 0x82, 0x53, 0x63};
+  ACE_OS::memcpy((void *)&rsp[offset], cookie, 4);
+  offset += 4;
+
+  RFC2131::DhcpOption *elm = NULL;
+  ACE_UINT8 tag = RFC2131::OPTION_MESSAGE_TYPE;
+
+  rsp[offset++] = RFC2131::OPTION_MESSAGE_TYPE;
+  /*length of one byte.*/
+  rsp[offset++] = 1;
+
+  if(parent.optionMap().find(tag, elm) != -1)
+  {
+    /*Found the Message Type.*/
+    if(RFC2131::DISCOVER == elm->m_value[0])
+    {
+      rsp[offset++] = RFC2131::OFFER;
+    }
+    else if(RFC2131::REQUEST == elm->m_value[0])
+    {
+      rsp[offset++] = RFC2131::ACK;
+    }
+  }
+
+  /*Parameter list.*/
+  tag = RFC2131::OPTION_PARAMETER_REQUEST_LIST;
+  elm = NULL;
+  if(parent.optionMap().find(tag, elm) != -1)
+  {
+    ACE_UINT32 idx = 0;
+    ACE_DEBUG((LM_DEBUG, "%I length of DHCP Param List is %u\n", elm->m_len));
+
+    for(idx = 0; idx < elm->m_len; idx++)
+    {
+      switch(elm->m_value[idx])
+      {
+      case RFC2131::OPTION_SUBNET_MASK:
+        rsp[offset++] = RFC2131::OPTION_SUBNET_MASK;
+        rsp[offset++] = 4;
+        *((ACE_UINT32 *)&rsp[offset]) = htonl(0x00);
+        offset += 4;
+        break;
+
+      case RFC2131::OPTION_ROUTER:
+        rsp[offset++] = RFC2131::OPTION_ROUTER;
+        rsp[offset++] = 4;
+        *((ACE_UINT32 *)&rsp[offset]) = htonl(0x00);
+        offset += 4;
+        break;
+
+      case RFC2131::OPTION_TIME_SERVER:
+        rsp[offset++] = RFC2131::OPTION_TIME_SERVER;
+        rsp[offset++] = 4;
+        *((ACE_UINT32 *)&rsp[offset]) = htonl(0x00);
+        offset += 4;
+        break;
+
+      case RFC2131::OPTION_NAME_SERVER:
+        rsp[offset++] = RFC2131::OPTION_NAME_SERVER;
+        rsp[offset++] = 4;
+        *((ACE_UINT32 *)&rsp[offset]) = htonl(0x00);
+        offset += 4;
+        break;
+
+      case RFC2131::OPTION_HOST_NAME:
+        rsp[offset++] = RFC2131::OPTION_HOST_NAME;
+        rsp[offset++] = 0;
+          /*Host Machine Name to be updated.*/;
+        *((ACE_UINT32 *)&rsp[offset]) = htonl(0x00);
+        offset += 4;
+        break;
+
+      case RFC2131::OPTION_DOMAIN_NAME:
+        rsp[offset++] = RFC2131::OPTION_DOMAIN_NAME;
+        rsp[offset++] = 0;
+          /*Host Machine Name to be updated.*/;
+        *((ACE_UINT32 *)&rsp[offset]) = htonl(0x00);
+        offset += 4;
+        break;
+
+      case RFC2131::OPTION_MTU:
+        rsp[offset++] = RFC2131::OPTION_MTU;
+        rsp[offset++] = 0;
+          /*Host Machine Name to be updated.*/;
+        *((ACE_UINT32 *)&rsp[offset]) = htonl(0x00);
+        offset += 4;
+        break;
+
+      case RFC2131::OPTION_BROADCAST_ADDRESS:
+        rsp[offset++] = RFC2131::OPTION_BROADCAST_ADDRESS;
+        rsp[offset++] = 0;
+          /*Host Machine Name to be updated.*/;
+        *((ACE_UINT32 *)&rsp[offset]) = htonl(0x00);
+        offset += 4;
+        break;
+
+      case RFC2131::OPTION_NIS_DOMAIN:
+        rsp[offset++] = RFC2131::OPTION_NIS_DOMAIN;
+        rsp[offset++] = 0;
+          /*Host Machine Name to be updated.*/;
+        *((ACE_UINT32 *)&rsp[offset]) = htonl(0x00);
+        offset += 4;
+        break;
+
+      case RFC2131::OPTION_NIS:
+        rsp[offset++] = RFC2131::OPTION_NIS;
+        rsp[offset++] = 0;
+          /*Host Machine Name to be updated.*/;
+        *((ACE_UINT32 *)&rsp[offset]) = htonl(0x00);
+        offset += 4;
+        break;
+
+      case RFC2131::OPTION_NTP_SERVER:
+        rsp[offset++] = RFC2131::OPTION_NTP_SERVER;
+        rsp[offset++] = 0;
+          /*Host Machine Name to be updated.*/;
+        *((ACE_UINT32 *)&rsp[offset]) = htonl(0x00);
+        offset += 4;
+        break;
+
+      case RFC2131::OPTION_REQUESTED_IP_ADDRESS:
+        rsp[offset++] = RFC2131::OPTION_REQUESTED_IP_ADDRESS;
+        rsp[offset++] = 0;
+          /*Host Machine Name to be updated.*/;
+        *((ACE_UINT32 *)&rsp[offset]) = htonl(0x00);
+        offset += 4;
+        break;
+
+      case RFC2131::OPTION_IP_LEASE_TIME:
+        rsp[offset++] = RFC2131::OPTION_IP_LEASE_TIME;
+        rsp[offset++] = 0;
+          /*Host Machine Name to be updated.*/;
+        *((ACE_UINT32 *)&rsp[offset]) = htonl(0x00);
+        offset += 4;
+        break;
+
+      case RFC2131::OPTION_OVERLOAD:
+        rsp[offset++] = RFC2131::OPTION_OVERLOAD;
+        rsp[offset++] = 0;
+          /*Host Machine Name to be updated.*/;
+        *((ACE_UINT32 *)&rsp[offset]) = htonl(0x00);
+        offset += 4;
+        break;
+
+      case RFC2131::OPTION_SERVER_IDENTIFIER:
+        rsp[offset++] = RFC2131::OPTION_SERVER_IDENTIFIER;
+        rsp[offset++] = 0;
+          /*Host Machine Name to be updated.*/;
+        *((ACE_UINT32 *)&rsp[offset]) = htonl(0x00);
+        offset += 4;
+        break;
+
+      default:
+        break;
+      }
+    }
+  }
+
+  rsp[offset++] = RFC2131::OPTION_IP_LEASE_TIME;
+  rsp[offset++] = 4;
+  *((ACE_UINT32 *)&rsp[offset]) = htonl(0x00);
+  offset += 4;
+
+  rsp[offset++] = RFC2131::OPTION_MTU;
+  rsp[offset++] = 2;
+  *((ACE_UINT16 *)&rsp[offset]) = htons(0x00);
+  offset += 2;
+
+  rsp[offset++] = RFC2131::OPTION_SERVER_IDENTIFIER;
+  rsp[offset++] = 0;
+  *((ACE_UINT32 *)&rsp[offset]) = htonl(0x00);
+  offset += 4;
+
+  rsp[offset++] = RFC2131::OPTION_END;
+
+  /*Update the lentgh of IP and UDP header now.*/
+  ip->tot_len = htons(offset - sizeof(TransportIF::ETH));
+  udp->len = htons(offset - (sizeof(TransportIF::ETH) + sizeof(TransportIF::IP)));
+
+  /*calculate the checksum now.*/
+  ip->chksum = chksumIP(ip, (sizeof(ACE_UINT32) * ip->len));
+  udp->chksum = chksumUDP(ip);
+  /*Update the length*/
+  mb->wr_ptr(offset);
+
+  return(*mb);
+}
+
 /*Populate DHCP Options.*/
 ACE_UINT32 DhcpServerState::populateDhcpOption(DHCP::Server &parent, ACE_Byte *dhcpOption,
                                                ACE_UINT32 optionLen)

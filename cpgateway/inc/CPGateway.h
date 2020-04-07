@@ -13,6 +13,26 @@
 typedef ACE_Hash_Map_Manager<ACE_CString, DHCP::Server*, ACE_Null_Mutex>subscriberMap_t;
 typedef ACE_Hash_Map_Manager<ACE_CString, DHCP::Server *, ACE_Null_Mutex>::iterator subscriberMap_ter;
 
+class DhcpConf
+{
+private:
+  static DhcpConf *m_instance;
+  ACE_UINT8 m_mtu;
+  ACE_UINT32 m_subnetMask;
+  ACE_UINT32 m_dns;
+  ACE_Byte m_domainName[255];
+  ACE_UINT32 m_serverIp;
+  ACE_Byte m_serverName[255];
+  ACE_UINT32 m_leaseTime;
+public:
+  DhcpConf();
+  DhcpConf(ACE_UINT8 mtu, ACE_UINT32 subnetMask, ACE_UINT32 dns,
+           ACE_Byte *domainName, ACE_UINT32 serverIp, ACE_Byte *serverName,
+           ACE_UINT32 lease);
+  ~DhcpConf();
+  static DhcpConf *instance();
+};
+
 class CPGateway : public ACE_Event_Handler
 {
   private:
@@ -28,6 +48,7 @@ class CPGateway : public ACE_Event_Handler
     /*State-Machine for CPGateway. Note This will point to pointer to sub-class*/
     CPGatewayState *m_state;
 
+    /*DHCP::Server instance based on chaddr - Client Identifier.*/
     subscriberMap_t m_subscriberMap;
 
   public:

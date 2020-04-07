@@ -8,7 +8,7 @@
 #include "ace/Log_Msg.h"
 
 #include "DhcpServer.h"
-#include "DhcpServerStateInit.h"
+#include "DhcpServerStateDiscover.h"
 
 //DHCP::Server(CPGateway *parent)
 DHCP::Server::Server()
@@ -17,8 +17,8 @@ DHCP::Server::Server()
   /*context of DHCP Client's dhcp-header.*/
   m_ctx = new RFC2131::DhcpCtx();
 
-  /*The start state is Init.*/
-  setState(DhcpServerStateInit::instance());
+  /*The start state is Discover.*/
+  setState(DhcpServerStateDiscover::instance());
 }
 
 DHCP::Server::~Server()

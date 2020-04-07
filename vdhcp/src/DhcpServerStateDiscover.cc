@@ -5,6 +5,7 @@
 #include "DhcpServer.h"
 #include "DhcpServerStateRequest.h"
 #include "ace/Log_Msg.h"
+#include "ace/Message_Block.h"
 
 DhcpServerStateDiscover *DhcpServerStateDiscover::m_instance = NULL;
 
@@ -49,11 +50,30 @@ ACE_UINT32 DhcpServerStateDiscover::offer(DHCP::Server &parent, ACE_Byte *inPtr,
   return(0);
 }
 
+ACE_UINT32 DhcpServerStateDiscover::request(DHCP::Server &parent, ACE_Byte *inPtr, ACE_UINT32 inLen)
+{
+  ACE_TRACE("DhcpServerStateDiscover::offer\n");
+  return(0);
+}
+
+ACE_UINT32 DhcpServerStateDiscover::requestAck(DHCP::Server &parent, ACE_Byte *inPtr, ACE_UINT32 inLen)
+{
+  ACE_TRACE("DhcpServerStateDiscover::offer\n");
+  return(0);
+}
+
+ACE_UINT32 DhcpServerStateDiscover::leaseTO(DHCP::Server &parent, ACE_Byte *inPtr, ACE_UINT32 inLen)
+{
+  ACE_TRACE("DhcpServerStateDiscover::offer\n");
+  return(0);
+}
+
 ACE_UINT32 DhcpServerStateDiscover::discover(DHCP::Server &parent, ACE_Byte *inPtr, ACE_UINT32 inLen)
 {
   ACE_TRACE("DhcpServerStateDiscover::discover\n");
 
   /*Prelare DHCP Offer Message .*/
+  ACE_Message_Block &mb = buildResponse(parent, inPtr, inLen);
 
   /*Move to next state to process DHCP Request.*/
   parent.setState(DhcpServerStateRequest::instance());

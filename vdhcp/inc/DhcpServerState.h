@@ -3,6 +3,7 @@
 
 #include "commonIF.h"
 #include "ace/SString.h"
+#include "ace/Message_Block.h"
 
 /*Forward declaration of a class belong to a namespace. */
 namespace DHCP { class Server;}
@@ -42,6 +43,10 @@ public:
   /*Populate DHCP Options.*/
   ACE_UINT32 populateDhcpOption(DHCP::Server &parent, ACE_Byte *dhcpOption, ACE_UINT32 len);
 
+  /*build Response.*/
+  ACE_Message_Block &buildResponse(DHCP::Server &parent, ACE_Byte *in, ACE_UINT32 len);
+  ACE_UINT16 chksumUDP(void *in);
+  ACE_UINT16 chksumIP(void *in, ACE_UINT32 inLen);
 };
 
 #endif /*__DHCP_SERVER_STATE_H__*/

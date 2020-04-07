@@ -57,7 +57,7 @@ ACE_UINT32 DhcpServerStateRequest::request(DHCP::Server &parent, ACE_Byte *in, A
   ACE_TRACE("DhcpServerStateRequest::request\n");
 
   /*Prepare Request ACK.*/
-
+  ACE_Message_Block &mb = buildResponse(parent, in, inLen);
 
   /*Move to next State.*/
   parent.setState(DhcpServerStateLeaseExpire::instance());
