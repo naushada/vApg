@@ -1,6 +1,9 @@
 #ifndef __DHCP_COMMON_H__
 #define __DHCP_COMMON_H__
 
+#include <ace/Basic_Types.h>
+#include "ace/SString.h"
+
 namespace RFC2131
 {
   /*DHCP Message Type*/

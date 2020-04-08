@@ -4,56 +4,70 @@
 #include "DhcpServerStateRequestAck.h"
 #include "ace/Log_Msg.h"
 
-RequestAckST *RequestAckST::m_instance = NULL;
+DhcpServerStateRequestAck *DhcpServerStateRequestAck::m_instance = NULL;
 
-RequestAckST *RequestAckST::instance()
+DhcpServerStateRequestAck *DhcpServerStateRequestAck::instance()
 {
-  ACE_TRACE("RequestAckST::get_instance");
+  ACE_TRACE("DhcpServerStateRequestAck::get_instance\n");
   if(!m_instance)
   {
-    m_instance = new RequestAckST();
+    m_instance = new DhcpServerStateRequestAck();
   }
 
   return(m_instance);
 }
 
-void RequestAckST::onEntry(DHCP::Server &parent)
+void DhcpServerStateRequestAck::onEntry(DHCP::Server &parent)
 {
-  ACE_TRACE("RequestAckST::onEntry");
+  ACE_TRACE("DhcpServerStateRequestAck::onEntry\n");
 }
 
-void RequestAckST::onExit(DHCP::Server &parent)
+void DhcpServerStateRequestAck::onExit(DHCP::Server &parent)
 {
-  ACE_TRACE("RequestAckST::onExit");
+  ACE_TRACE("DhcpServerStateRequestAck::onExit\n");
 }
 
-ACE_UINT32 RequestAckST::offer(DHCP::Server &parent)
+ACE_UINT32 DhcpServerStateRequestAck::offer(DHCP::Server &parent)
 {
-  ACE_TRACE("RequestAckST::offer");
+  ACE_TRACE("DhcpServerStateRequestAck::offer\n");
   return(0);
 }
 
-ACE_UINT32 RequestAckST::discover(DHCP::Server &parent)
+ACE_UINT32 DhcpServerStateRequestAck::discover(DHCP::Server &parent)
 {
-  ACE_TRACE("RequestAckST::discover");
+  ACE_TRACE("DhcpServerStateRequestAck::discover\n");
   return(0);
 }
 
-ACE_UINT32 RequestAckST::request(DHCP::Server &parent)
+ACE_UINT32 DhcpServerStateRequestAck::request(DHCP::Server &parent)
 {
-  ACE_TRACE("RequestAckST::request");
+  ACE_TRACE("DhcpServerStateRequestAck::request\n");
   return(0);
 }
 
-ACE_UINT32 RequestAckST::requestAck(DHCP::Server &parent)
+ACE_UINT32 DhcpServerStateRequestAck::requestAck(DHCP::Server &parent)
 {
-  ACE_TRACE("RequestAckST::requestAck");
+  ACE_TRACE("DhcpServerStateRequestAck::requestAck\n");
   return(0);
 }
 
-ACE_UINT32 RequestAckST::leaseTO(DHCP::Server &parent)
+ACE_UINT32 DhcpServerStateRequestAck::leaseTO(DHCP::Server &parent)
 {
-  ACE_TRACE("RequestAckST::leaseTO");
+  ACE_TRACE("DhcpServerStateRequestAck::leaseTO\n");
+  return(0);
+}
+
+/*Guard Timer is stared if next request is expected to complete the Flow.*/
+ACE_UINT32 DhcpServerStateRequestAck::guardTimerExpiry(DHCP::Server &parent, const void *act)
+{
+  ACE_TRACE("DhcpServerStateRequestAck::guardTimerExpiry\n");
+  return(0);
+}
+
+/*lease Timer is started when IP address assignment is done successfully.*/
+ACE_UINT32 DhcpServerStateRequestAck::leaseTimerExpiry(DHCP::Server &parent, const void *act)
+{
+  ACE_TRACE("DhcpServerStateRequestAck::leaseTimerExpiry\n");
   return(0);
 }
 

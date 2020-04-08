@@ -20,6 +20,10 @@ public:
   ACE_UINT32 request(DHCP::Server &parent);
   ACE_UINT32 requestAck(DHCP::Server &parent);
   ACE_UINT32 leaseTO(DHCP::Server &parent);
+  /*Guard Timer is stared if next request is expected to complete the Flow.*/
+  ACE_UINT32 guardTimerExpiry(DHCP::Server &parent, const void *act);
+  /*lease Timer is started when IP address assignment is done successfully.*/
+  ACE_UINT32 leaseTimerExpiry(DHCP::Server &parent, const void *act);
 
 };
 

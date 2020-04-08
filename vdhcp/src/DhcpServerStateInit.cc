@@ -79,4 +79,18 @@ ACE_UINT32 DhcpServerStateInit::leaseTO(DHCP::Server &parent, ACE_Byte *in, ACE_
 }
 
 
+/*Guard Timer is stared if next request is expected to complete the Flow.*/
+ACE_UINT32 DhcpServerStateInit::guardTimerExpiry(DHCP::Server &parent, const void *act)
+{
+  ACE_TRACE("DhcpServerStateInit::guardTimerExpiry\n");
+  return(0);
+}
+
+/*lease Timer is started when IP address assignment is done successfully.*/
+ACE_UINT32 DhcpServerStateInit::leaseTimerExpiry(DHCP::Server &parent, const void *act)
+{
+  ACE_TRACE("DhcpServerStateInit::leaseTimerExpiry\n");
+  return(0);
+}
+
 #endif /*__DHCP_SERVER_STATE_INIT_CC__*/

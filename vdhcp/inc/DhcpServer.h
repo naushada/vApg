@@ -1,19 +1,21 @@
 #ifndef __DHCP_SERVER_H__
 #define __DHCP_SERVER_H__
 
-#include "ipc.h"
-
 #include "DhcpCommon.h"
 #include "DhcpServerState.h"
 #include <ace/Basic_Types.h>
 #include <ace/SString.h>
 #include <ace/Hash_Map_Manager.h>
 #include <ace/Null_Mutex.h>
+#include <ace/Event_Handler.h>
 
 class DhcpServerState;
 
 namespace DHCP
 {
+  static const ACE_UINT32 EXPECTED_REQUEST_GUARD_TIMER_ID = 0x01;
+  static const ACE_UINT32 LEASE_GUARD_TIMER_ID = 0x02;
+
   static const ACE_UINT32 SIZE_64MB = (1 << 26);
   static const ACE_UINT32 SIZE_32MB = (1 << 25);
   static const ACE_UINT32 SIZE_16MB = (1 << 24);
@@ -26,8 +28,7 @@ namespace DHCP
 
   typedef ACE_Hash_Map_Manager<ACE_UINT8, RFC2131::DhcpOption*,ACE_Null_Mutex>ElemDef;
 
-  //class Server : public UniTimer
-  class Server
+  class Server : public ACE_Event_Handler 
   {
   private:
     ACE_Message_Block *m_mb;
@@ -37,6 +38,10 @@ namespace DHCP
     /*dhcp header is in context.*/
     RFC2131::DhcpCtx *m_ctx;
     ElemDef *m_optionMap;
+    /*Guard Timer for next request.*/
+    long m_guardTid;
+    /*lease Expire timeout.*/
+    long m_leaseTid;
 
   public:
     //Server(CPGateway *parent);
@@ -52,41 +57,71 @@ namespace DHCP
     void xid(ACE_UINT32 xid);
     ACE_UINT32 xid(void);
 
+    void guardTid(long gTid);
+    long guardTid(void);
+
+    void leaseTid(long lTid);
+    long leaseTid(void);
+
     RFC2131::DhcpCtx &ctx(void);
     ElemDef &optionMap(void);
 
     ACE_INT32 process_timeout(const void *act);
+
+    ACE_INT32 handle_timeout(ACE_Time_Value &tv,
+                             const void *act=0);
+
+    long start_timer(ACE_UINT32 delay, const void *act,
+                     ACE_Time_Value interval = ACE_Time_Value::zero);
+
+    void stop_timer(long timerId);
   };
-}
 
-
-class CPServer : public UniIPC, public UniTimer
-{
-private:
-  ACE_Message_Block *m_mb;
-  ACE_CString m_description;
-  DhcpServerState *m_state;
-
-public:
-  CPServer(ACE_CString ipStr, ACE_UINT8 facility, ACE_UINT8 instance,
-         ACE_CString nodeTag) :
-    UniIPC(ipStr, facility, instance, nodeTag)
+  typedef struct TIMER_ID
   {
-  }
+    TIMER_ID()
+    {
+      m_timerType = 0;
+      m_chaddrLen = 0;
+      ACE_OS::memset((void *)m_chaddr, 0, sizeof(m_chaddr));
+    }
 
-  virtual ~CPServer();
+    ACE_UINT32 m_timerType;
+    ACE_UINT8 m_chaddrLen;
+    ACE_Byte m_chaddr[16];
 
-  void setState(DhcpServerState *st);
-  DhcpServerState *getState(void);
+    ACE_UINT32 timerType(void)
+    {
+      return(m_timerType);
+    }
 
-  ACE_INT8 start();
-  ACE_INT8 stop();
+    void timerType(ACE_UINT32 tType)
+    {
+      m_timerType = tType;
+    }
 
-  ACE_UINT32 handle_ipc(ACE_UINT8 *req, ACE_UINT32 reqLen);
-  ACE_INT32 process_timeout(const void *act);
+    ACE_UINT8 chaddrLen(void)
+    {
+      return(m_chaddrLen);
+    }
 
-};
+    void chaddrLen(ACE_UINT8 len)
+    {
+      m_chaddrLen = len;
+    }
 
+    ACE_Byte *chaddr(void)
+    {
+      return(m_chaddr);
+    }
+
+    void chaddr(ACE_Byte *cha)
+    {
+      ACE_OS::memcpy((void *)m_chaddr, (const void *)cha, chaddrLen());
+    }
+
+  }TIMER_ID;
+}
 
 
 #endif /*__DHCP_SERVER_H__*/

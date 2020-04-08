@@ -67,4 +67,20 @@ DhcpServerStateLeaseExpire::~DhcpServerStateLeaseExpire()
 {
   ACE_TRACE("DhcpServerStateLeaseExpire::~DhcpServerStateLeaseExpire\n");
 }
+
+
+/*Guard Timer is stared if next request is expected to complete the Flow.*/
+ACE_UINT32 DhcpServerStateLeaseExpire::guardTimerExpiry(DHCP::Server &parent, const void *act)
+{
+  ACE_TRACE("DhcpServerStateLeaseExpire::guardTimerExpiry\n");
+  return(0);
+}
+
+/*lease Timer is started when IP address assignment is done successfully.*/
+ACE_UINT32 DhcpServerStateLeaseExpire::leaseTimerExpiry(DHCP::Server &parent, const void *act)
+{
+  ACE_TRACE("DhcpServerStateLeaseExpire::leaseTimerExpiry\n");
+  return(0);
+}
+
 #endif /*__DHCP_SERVER_STATE_LEASE_EXPIRE__CC__*/

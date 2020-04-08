@@ -80,6 +80,20 @@ ACE_UINT32 DhcpServerStateDiscover::discover(DHCP::Server &parent, ACE_Byte *inP
   return(0);
 }
 
+/*Guard Timer is stared if next request is expected to complete the Flow.*/
+ACE_UINT32 DhcpServerStateDiscover::guardTimerExpiry(DHCP::Server &parent, const void *act)
+{
+  ACE_TRACE("DhcpServerStateDiscover::guardTimerExpiry\n");
+  return(0);
+}
+
+/*lease Timer is started when IP address assignment is done successfully.*/
+ACE_UINT32 DhcpServerStateDiscover::leaseTimerExpiry(DHCP::Server &parent, const void *act)
+{
+  ACE_TRACE("DhcpServerStateDiscover::leaseTimerExpiry\n");
+  return(0);
+
+}
 
 
 #endif /*__DHCP_SERVER_STATE_DISCOVER_CC__*/

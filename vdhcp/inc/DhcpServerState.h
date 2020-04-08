@@ -35,6 +35,10 @@ public:
   virtual ACE_UINT32 nack(DHCP::Server &parent, ACE_Byte *inPtr, ACE_UINT32 inLen);
   /*decline  */
   virtual ACE_UINT32 decline(DHCP::Server &parent, ACE_Byte *inPtr, ACE_UINT32 inLen);
+  /*Guard Timer is stared if next request is expected to complete the Flow.*/
+  virtual ACE_UINT32 guardTimerExpiry(DHCP::Server &parent, const void *act);
+  /*lease Timer is started when IP address assignment is done successfully.*/
+  virtual ACE_UINT32 leaseTimerExpiry(DHCP::Server &parent, const void *act);
   /*RX  */
   ACE_UINT32 rx(DHCP::Server &parent, ACE_Byte *inPtr, ACE_UINT32 inLen);
 
