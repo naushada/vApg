@@ -3,6 +3,7 @@
 noinst_LIBRARIES = libdhcps.a
 
 libdhcps_a_SOURCES = src/DhcpServer.cc \
+										 src/DhcpServerUser.cc \
 										 src/DhcpServerState.cc \
 										 src/DhcpServerStateDecline.cc \
 										 src/DhcpServerStateDiscover.cc \

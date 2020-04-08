@@ -10,6 +10,7 @@
 #include <ace/Event_Handler.h>
 
 class DhcpServerState;
+class DhcpServerUser;
 
 namespace DHCP
 {
@@ -28,7 +29,7 @@ namespace DHCP
 
   typedef ACE_Hash_Map_Manager<ACE_UINT8, RFC2131::DhcpOption*,ACE_Null_Mutex>ElemDef;
 
-  class Server : public ACE_Event_Handler 
+  class Server
   {
   private:
     ACE_Message_Block *m_mb;
@@ -38,14 +39,11 @@ namespace DHCP
     /*dhcp header is in context.*/
     RFC2131::DhcpCtx *m_ctx;
     ElemDef *m_optionMap;
-    /*Guard Timer for next request.*/
-    long m_guardTid;
-    /*lease Expire timeout.*/
-    long m_leaseTid;
+    DhcpServerUser *m_dhcpServerUser;
 
   public:
-    //Server(CPGateway *parent);
     Server();
+    Server(DhcpServerUser *user);
     virtual ~Server();
 
     void setState(DhcpServerState *st);
@@ -56,71 +54,12 @@ namespace DHCP
 
     void xid(ACE_UINT32 xid);
     ACE_UINT32 xid(void);
-
-    void guardTid(long gTid);
-    long guardTid(void);
-
-    void leaseTid(long lTid);
-    long leaseTid(void);
-
     RFC2131::DhcpCtx &ctx(void);
     ElemDef &optionMap(void);
 
-    ACE_INT32 process_timeout(const void *act);
-
-    ACE_INT32 handle_timeout(ACE_Time_Value &tv,
-                             const void *act=0);
-
-    long start_timer(ACE_UINT32 delay, const void *act,
-                     ACE_Time_Value interval = ACE_Time_Value::zero);
-
-    void stop_timer(long timerId);
+    DhcpServerUser &getDhcpServerUser(void);
+    void setDhcpServerUser(DhcpServerUser *usr);
   };
-
-  typedef struct TIMER_ID
-  {
-    TIMER_ID()
-    {
-      m_timerType = 0;
-      m_chaddrLen = 0;
-      ACE_OS::memset((void *)m_chaddr, 0, sizeof(m_chaddr));
-    }
-
-    ACE_UINT32 m_timerType;
-    ACE_UINT8 m_chaddrLen;
-    ACE_Byte m_chaddr[16];
-
-    ACE_UINT32 timerType(void)
-    {
-      return(m_timerType);
-    }
-
-    void timerType(ACE_UINT32 tType)
-    {
-      m_timerType = tType;
-    }
-
-    ACE_UINT8 chaddrLen(void)
-    {
-      return(m_chaddrLen);
-    }
-
-    void chaddrLen(ACE_UINT8 len)
-    {
-      m_chaddrLen = len;
-    }
-
-    ACE_Byte *chaddr(void)
-    {
-      return(m_chaddr);
-    }
-
-    void chaddr(ACE_Byte *cha)
-    {
-      ACE_OS::memcpy((void *)m_chaddr, (const void *)cha, chaddrLen());
-    }
-
-  }TIMER_ID;
 }
 
 

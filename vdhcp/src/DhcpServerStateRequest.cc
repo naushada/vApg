@@ -4,6 +4,7 @@
 #include "DhcpServerStateLeaseExpire.h"
 #include "DhcpServerStateRequest.h"
 #include "DhcpServer.h"
+#include "DhcpServerUser.h"
 #include "ace/Log_Msg.h"
 
 DhcpServerStateRequest *DhcpServerStateRequest::m_instance = NULL;
@@ -37,14 +38,14 @@ void DhcpServerStateRequest::onEntry(DHCP::Server &parent)
   /*2 seconds.*/
   ACE_UINT32 to = 2;
 
-  DHCP::TIMER_ID *act = new DHCP::TIMER_ID();
+  TIMER_ID *act = new TIMER_ID();
   act->timerType(DHCP::EXPECTED_REQUEST_GUARD_TIMER_ID);
   act->chaddrLen(parent.ctx().chaddrLen());
   ACE_OS::memcpy((void *)act->chaddr(), (const void *)parent.ctx().chaddr(),
                  parent.ctx().chaddrLen());
 
 
-  parent.guardTid(parent.start_timer(to, (const void *)act));
+  parent.getDhcpServerUser().guardTid(parent.getDhcpServerUser().start_timer(to, (const void *)act));
 }
 
 void DhcpServerStateRequest::onExit(DHCP::Server &parent)
@@ -68,7 +69,7 @@ ACE_UINT32 DhcpServerStateRequest::request(DHCP::Server &parent, ACE_Byte *in, A
 {
   ACE_TRACE("DhcpServerStateRequest::request\n");
 
-  parent.stop_timer(parent.guardTid());
+  parent.getDhcpServerUser().stop_timer(parent.getDhcpServerUser().guardTid());
 
   /*Prepare Request ACK.*/
   ACE_Message_Block &mb = buildResponse(parent, in, inLen);
@@ -94,7 +95,6 @@ ACE_UINT32 DhcpServerStateRequest::leaseTO(DHCP::Server &parent, ACE_Byte *in, A
 ACE_UINT32 DhcpServerStateRequest::guardTimerExpiry(DHCP::Server &parent, const void *act)
 {
   ACE_TRACE("DhcpServerStateRequest::guardTimerExpiry\n");
-  DHCP::TIMER_ID *tObj = (DHCP::TIMER_ID *)act;
 
   return(0);
 }

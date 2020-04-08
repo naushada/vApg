@@ -9,7 +9,7 @@
 #include "CPGateway.h"
 #include "CPGatewayState.h"
 
-#include "DhcpServer.h"
+//#include "DhcpServerUser.h"
 
 CPGatewayState::CPGatewayState()
 {
@@ -45,29 +45,7 @@ ACE_UINT32 CPGatewayState::processRequest(CPGateway &parent,
       if((TransportIF::DHCP_CLIENT_PORT == ntohs(udpHdr->src_port)) &&
          (TransportIF::DHCP_SERVER_PORT == ntohs(udpHdr->dest_port)))
       {
-        /*This is a DHCP Message.*/
-        TransportIF::DHCP *dhcpHdr = (TransportIF::DHCP *)&in[sizeof(TransportIF::ETH) +
-                                                              sizeof(TransportIF::IP) +
-                                                              sizeof(TransportIF::UDP)];
-
-        ACE_CString haddr((const char *)dhcpHdr->chaddr, TransportIF::ETH_ALEN);
-        ACE_DEBUG((LM_DEBUG, "%I chaddr is %s\n", haddr.c_str()));
-
-        if(parent.isSubscriberFound(haddr))
-        {
-          ACE_DEBUG((LM_INFO, "%I chaddr (%s) is found\n", haddr.c_str()));
-          DHCP::Server *sess = parent.getSubscriber(haddr);
-          sess->getState().rx(*sess, in, inLen);
-        }
-        else
-        {
-          DHCP::Server *sess = NULL;
-          ACE_NEW_NORETURN(sess, DHCP::Server());
-
-          parent.addSubscriber(sess, haddr);
-          sess->getState().rx(*sess, in, inLen);
-        }
-
+        parent.getDhcpServerUser().processRequest(in, inLen);
       }
       //else if()
       {

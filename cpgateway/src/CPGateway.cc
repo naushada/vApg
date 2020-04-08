@@ -46,6 +46,13 @@ CPGatewayState &CPGateway::getState(void)
   return(*m_state);
 }
 
+
+DhcpServerUser &CPGateway::getDhcpServerUser(void)
+{
+  ACE_TRACE("CPGateway::getState\n");
+  return(*m_dhcpUser);
+}
+
 int CPGateway::handle_input(ACE_HANDLE fd)
 {
   ACE_TRACE("CPGateway::handle_input\n");
@@ -264,48 +271,6 @@ ACE_UINT8 CPGateway::stop()
   ACE_TRACE("CPGateway::stop\n");
   return(0);
 }
-
-ACE_UINT8 CPGateway::isSubscriberFound(ACE_CString macAddress)
-{
-  if(m_subscriberMap.find(macAddress) == -1)
-  {
-    ACE_DEBUG((LM_ERROR, "This client %s is not found\n", macAddress.c_str()));
-    return(0);
-  }
-
-  return(1);
-}
-
-ACE_UINT8 CPGateway::createSubscriber(ACE_CString macAddress)
-{
-
-  DHCP::Server *sess = NULL;
-  ACE_NEW_NORETURN(sess, DHCP::Server());
-  /*let STL do the memory management for stack object.*/
-  m_subscriberMap.bind(macAddress, sess);
-
-  return(0);
-}
-
-ACE_UINT8 CPGateway::addSubscriber(DHCP::Server *sess, ACE_CString macAddress)
-{
-  /*let STL do the memory management for stack object.*/
-  m_subscriberMap.bind(macAddress, sess);
-
-  return(0);
-}
-
-DHCP::Server *CPGateway::getSubscriber(ACE_CString macAddress)
-{
-  DHCP::Server *sess = NULL;
-  if(m_subscriberMap.find(macAddress, sess) == -1)
-  {
-    ACE_DEBUG((LM_ERROR, "No session for client %s is found\n", macAddress.c_str()));
-  }
-
-  return(sess);
-}
-
 int main(int argc, char *argv[])
 {
 
@@ -331,4 +296,5 @@ int main(int argc, char *argv[])
 
   return(0);
 }
+
 #endif /*__CPGATEWAY_CC__*/
