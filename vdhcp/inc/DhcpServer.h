@@ -27,7 +27,8 @@ namespace DHCP
   static const ACE_INT32 SUCCESS = 0;
   static const ACE_INT32 FAILURE = -1;
 
-  typedef ACE_Hash_Map_Manager<ACE_UINT8, RFC2131::DhcpOption*,ACE_Null_Mutex>ElemDef;
+  typedef ACE_Hash_Map_Manager<ACE_UINT8, RFC2131::DhcpOption*, ACE_Null_Mutex>ElemDef;
+  typedef ACE_Hash_Map_Manager<ACE_UINT8, RFC2131::DhcpOption *, ACE_Null_Mutex>::iterator ElemDef_iter;
 
   class Server
   {

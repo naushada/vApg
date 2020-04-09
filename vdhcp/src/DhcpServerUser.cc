@@ -157,13 +157,15 @@ ACE_INT32 DhcpServerUser::process_timeout(const void *act)
       ACE_DEBUG((LM_DEBUG, "EXPECTED_REQUEST_GUARD_TIMER_ID is expired\n"));
       /*Kick the state machine.*/
       sess->getState().guardTimerExpiry(*sess, (const void *)act);
-      //m_instMap.unbind(cha);
+      m_instMap.unbind(cha);
       delete sess;
       break;
     case DHCP::LEASE_GUARD_TIMER_ID:
       ACE_DEBUG((LM_DEBUG, "LEASE_GUARD_TIMER_ID is expired\n"));
       /*Kick the state machine.*/
       sess->getState().leaseTimerExpiry(*sess, (const void *)act);
+      m_instMap.unbind(cha);
+      delete sess;
       break;
     default:
       break;
