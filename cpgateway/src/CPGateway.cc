@@ -113,7 +113,7 @@ int CPGateway::handle_input(ACE_HANDLE fd)
     if(!(idx%16))
       ACE_DEBUG((LM_DEBUG, "\n"));
 
-    ACE_DEBUG((LM_DEBUG, "%0.2X ", dd[idx]));
+    ACE_DEBUG((LM_DEBUG, "%0.2X ", dd[idx] & 0xFF));
   }
 
   ACE_DEBUG((LM_DEBUG, "%I CPGateway length %u\n", len));
