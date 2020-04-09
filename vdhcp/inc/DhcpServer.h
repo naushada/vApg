@@ -39,7 +39,7 @@ namespace DHCP
     DhcpServerState *m_state;
     /*dhcp header is in context.*/
     RFC2131::DhcpCtx *m_ctx;
-    ElemDef *m_optionMap;
+    ElemDef m_optionMap;
     DhcpServerUser *m_dhcpServerUser;
 
   public:

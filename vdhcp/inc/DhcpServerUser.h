@@ -9,6 +9,8 @@
 #include <ace/Event_Handler.h>
 #include <ace/Basic_Types.h>
 
+class CPGateway;
+
 typedef ACE_Hash_Map_Manager<ACE_CString, DHCP::Server*, ACE_Null_Mutex>DhcpServerInstMap_t;
 typedef ACE_Hash_Map_Manager<ACE_CString, DHCP::Server *, ACE_Null_Mutex>::iterator DhcpServerInstMap_iter;
 
@@ -66,8 +68,13 @@ private:
   long m_guardTid;
   /*lease Expire timeout.*/
   long m_leaseTid;
+  /*back pointer*/
+  CPGateway *m_parent;
 
 public:
+
+  DhcpServerUser(CPGateway *parent);
+  virtual ~DhcpServerUser();
 
   void guardTid(long gTid);
   long guardTid(void);

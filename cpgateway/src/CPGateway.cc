@@ -219,6 +219,7 @@ CPGateway::CPGateway(ACE_CString intfName, ACE_CString ipAddr,
   ACE_TRACE("CPGateway::CPGateway\n");
   m_ethInterface = intfName;
 
+  ACE_NEW_NORETURN(m_dhcpUser, DhcpServerUser(this));
   /*Mske CPGateway state machine Activated State.*/
   setState(CPGatewayStateActivated::instance());
 
@@ -246,6 +247,7 @@ CPGateway::CPGateway(ACE_CString intfName)
 CPGateway::~CPGateway()
 {
   ACE_TRACE("CPGateway::~CPGateway\n");
+  delete m_dhcpUser;
 }
 
 ACE_UINT8 CPGateway::start()

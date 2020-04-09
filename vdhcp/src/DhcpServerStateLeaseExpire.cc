@@ -66,6 +66,7 @@ DhcpServerStateLeaseExpire::DhcpServerStateLeaseExpire()
 DhcpServerStateLeaseExpire::~DhcpServerStateLeaseExpire()
 {
   ACE_TRACE("DhcpServerStateLeaseExpire::~DhcpServerStateLeaseExpire\n");
+  delete m_instance;
 }
 
 

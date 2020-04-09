@@ -9,7 +9,7 @@ private:
   static DhcpServerStateOffer *m_instance;
   DhcpServerStateOffer();
 public:
-  ~DhcpServerStateOffer();
+  virtual ~DhcpServerStateOffer();
   static DhcpServerStateOffer *instance();
   void onEntry(DHCP::Server &parent);
   void onExit(DHCP::Server &parent);

@@ -17,6 +17,12 @@ DhcpServerStateOffer *DhcpServerStateOffer::instance()
   return (m_instance);
 }
 
+DhcpServerStateOffer::~DhcpServerStateOffer()
+{
+  ACE_TRACE("DhcpServerStateOffer::~DhcpServerStateOffer\n");
+  delete m_instance;
+}
+
 void DhcpServerStateOffer::onEntry(DHCP::Server &parent)
 {
   ACE_TRACE("DhcpServerStateOffer::onEntry\n");

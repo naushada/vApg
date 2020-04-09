@@ -36,6 +36,17 @@ DHCP::Server::~Server()
   ACE_TRACE("DHCP::Server::~Server\n");
   delete m_ctx;
   m_ctx = NULL;
+
+  DHCP::ElemDef_iter iter = m_optionMap.begin();
+  RFC2131::DhcpOption *opt = NULL;
+
+  for(; iter != m_optionMap.end(); iter++)
+  {
+    /*int_id_ is the Value, ext_id_ is the key of ACE_Hash_Map_Manager.*/
+    opt = (RFC2131::DhcpOption *)((*iter).int_id_);
+    m_optionMap.unbind(opt->getTag());
+    delete opt;
+  }
 }
 
 void DHCP::Server::setState(DhcpServerState *st)
@@ -74,7 +85,7 @@ RFC2131::DhcpCtx &DHCP::Server::ctx(void)
 
 DHCP::ElemDef &DHCP::Server::optionMap(void)
 {
-  return(*m_optionMap);
+  return(m_optionMap);
 }
 
 ACE_UINT32 DHCP::Server::start()

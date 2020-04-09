@@ -17,6 +17,11 @@ DhcpServerStateRequestAck *DhcpServerStateRequestAck::instance()
   return(m_instance);
 }
 
+DhcpServerStateRequestAck::~DhcpServerStateRequestAck()
+{
+  ACE_TRACE("DhcpServerStateRequestAck::~DhcpServerStateRequestAck\n");
+  delete m_instance;
+}
 void DhcpServerStateRequestAck::onEntry(DHCP::Server &parent)
 {
   ACE_TRACE("DhcpServerStateRequestAck::onEntry\n");

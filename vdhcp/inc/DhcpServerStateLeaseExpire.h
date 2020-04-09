@@ -10,7 +10,7 @@ private:
   DhcpServerStateLeaseExpire();
 
 public:
-  ~DhcpServerStateLeaseExpire();
+  virtual ~DhcpServerStateLeaseExpire();
   static DhcpServerStateLeaseExpire *instance();
 
   void onEntry(DHCP::Server &parent);

@@ -29,6 +29,8 @@ DhcpServerStateRequest::DhcpServerStateRequest()
 
 DhcpServerStateRequest::~DhcpServerStateRequest()
 {
+  ACE_TRACE("DhcpServerStateRequest::~DhcpServerStateRequest\n");
+  delete m_instance;
 }
 
 void DhcpServerStateRequest::onEntry(DHCP::Server &parent)

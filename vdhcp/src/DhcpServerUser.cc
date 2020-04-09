@@ -9,6 +9,29 @@
 #include "commonIF.h"
 #include "DhcpServer.h"
 
+DhcpServerUser::DhcpServerUser(CPGateway *parent)
+{
+  m_parent = parent;
+  guardTid(0);
+  leaseTid(0);
+  m_instMap.unbind_all();
+}
+
+DhcpServerUser::~DhcpServerUser()
+{
+  DHCP::Server *inst = NULL;
+  DhcpServerInstMap_iter iter = m_instMap.begin();
+
+  for(; iter != m_instMap.end(); iter++)
+  {
+    /*int_id_ is the Value, ext_id_ is the key of ACE_Hash_Map_Manager.*/
+    inst = (DHCP::Server *)((*iter).int_id_);
+    ACE_CString cha = (ACE_CString)((*iter).ext_id_);
+    m_instMap.unbind(cha);
+    delete inst;
+  }
+}
+
 ACE_UINT8 DhcpServerUser::isSubscriberFound(ACE_CString macAddress)
 {
   if(m_instMap.find(macAddress) == -1)
