@@ -1,6 +1,7 @@
 #ifndef __DHCP_SERVER_STATE_DISCOVER_CC__
 #define __DHCP_SERVER_STATE_DISCOVER_CC__
 
+#include "DhcpServerUser.h"
 #include "DhcpServerStateDiscover.h"
 #include "DhcpServer.h"
 #include "DhcpServerStateRequest.h"
@@ -74,6 +75,8 @@ ACE_UINT32 DhcpServerStateDiscover::discover(DHCP::Server &parent, ACE_Byte *inP
 
   /*Prelare DHCP Offer Message .*/
   ACE_Message_Block &mb = buildResponse(parent, inPtr, inLen);
+  ACE_CString cha((const char *)parent.ctx().chaddr());
+  parent.getDhcpServerUser().sendResponse(cha, (ACE_Byte *)mb.rd_ptr(), mb.length());
 
   /*Move to next state to process DHCP Request.*/
   parent.setState(DhcpServerStateRequest::instance());

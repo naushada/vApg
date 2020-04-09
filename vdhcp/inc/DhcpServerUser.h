@@ -69,7 +69,7 @@ private:
   /*lease Expire timeout.*/
   long m_leaseTid;
   /*back pointer*/
-  CPGateway *m_parent;
+  CPGateway *m_cpGw;
 
 public:
 
@@ -82,6 +82,9 @@ public:
   void leaseTid(long lTid);
   long leaseTid(void);
 
+  CPGateway &cpGw(void);
+
+  int sendResponse(ACE_CString cha, ACE_Byte *in, ACE_UINT32 inLen);
   ACE_UINT32 processRequest(ACE_Byte *inPtr, ACE_UINT32 inLen);
   ACE_UINT8 isSubscriberFound(ACE_CString macAddress);
   ACE_UINT8 createSubscriber(ACE_CString macAddress);
@@ -100,6 +103,27 @@ public:
                    ACE_Time_Value interval = ACE_Time_Value::zero);
 
   void stop_timer(long timerId);
+};
+
+class DhcpConf
+{
+private:
+  static DhcpConf *m_instance;
+  ACE_UINT8 m_mtu;
+  ACE_UINT32 m_subnetMask;
+  ACE_UINT32 m_dns;
+  ACE_Byte m_domainName[255];
+  ACE_UINT32 m_serverIp;
+  ACE_Byte m_serverName[255];
+  ACE_UINT32 m_leaseTime;
+
+public:
+  DhcpConf();
+  DhcpConf(ACE_UINT8 mtu, ACE_UINT32 subnetMask, ACE_UINT32 dns,
+           ACE_Byte *domainName, ACE_UINT32 serverIp, ACE_Byte *serverName,
+           ACE_UINT32 lease);
+  ~DhcpConf();
+  static DhcpConf *instance();
 };
 
 

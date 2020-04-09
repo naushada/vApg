@@ -20,6 +20,7 @@ libdhcps_a_SOURCES = src/DhcpServer.cc \
 libdhcps_a_CPPFLAGS=-I$(srcdir)/inc \
 										-I$(top_srcdir)/ipc/inc \
                     -I$(top_srcdir)/common/inc \
+                    -I$(top_srcdir)/cpgateway/inc \
                     -I/usr/local \
                     -I/usr/local/ACE-6.5.0/include
 

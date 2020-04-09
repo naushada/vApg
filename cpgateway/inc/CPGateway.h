@@ -10,27 +10,6 @@
 #include "ace/Hash_Map_Manager.h"
 #include "ace/Null_Mutex.h"
 
-
-class DhcpConf
-{
-private:
-  static DhcpConf *m_instance;
-  ACE_UINT8 m_mtu;
-  ACE_UINT32 m_subnetMask;
-  ACE_UINT32 m_dns;
-  ACE_Byte m_domainName[255];
-  ACE_UINT32 m_serverIp;
-  ACE_Byte m_serverName[255];
-  ACE_UINT32 m_leaseTime;
-public:
-  DhcpConf();
-  DhcpConf(ACE_UINT8 mtu, ACE_UINT32 subnetMask, ACE_UINT32 dns,
-           ACE_Byte *domainName, ACE_UINT32 serverIp, ACE_Byte *serverName,
-           ACE_UINT32 lease);
-  ~DhcpConf();
-  static DhcpConf *instance();
-};
-
 class CPGateway : public ACE_Event_Handler
 {
   private:
@@ -39,6 +18,7 @@ class CPGateway : public ACE_Event_Handler
     ACE_HANDLE m_handle;
     ACE_Message_Block *m_mb;
     ACE_CString m_ipAddress;
+    /*self macAddress*/
     ACE_CString m_macAddress;
     ACE_UINT32 m_intfIndex;
     ACE_SOCK_Dgram m_dgram;
@@ -62,7 +42,7 @@ class CPGateway : public ACE_Event_Handler
     virtual int handle_input(ACE_HANDLE handle);
     ACE_INT32 open(void);
     ACE_INT32 get_index(void);
-    ACE_HANDLE handle();
+    ACE_HANDLE handle(void);
     void set_handle(ACE_HANDLE handle);
 
     void setState(CPGatewayState *sm);
@@ -70,6 +50,9 @@ class CPGateway : public ACE_Event_Handler
 
     void setDhcpServerUser(DhcpServerUser *du);
     DhcpServerUser &getDhcpServerUser(void);
+    int sendResponse(ACE_CString chaddr, ACE_Byte *in, ACE_UINT32 inLen);
+    void ipAddr(ACE_CString ip);
+    void ethIntfName(ACE_CString eth);
 };
 
 #endif /*__CPGATEWAY_H__*/

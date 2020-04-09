@@ -5,13 +5,14 @@
 #include "ace/Log_Msg.h"
 #include "ace/Reactor.h"
 
+#include "CPGateway.h"
 #include "DhcpServerUser.h"
 #include "commonIF.h"
 #include "DhcpServer.h"
 
 DhcpServerUser::DhcpServerUser(CPGateway *parent)
 {
-  m_parent = parent;
+  m_cpGw = parent;
   guardTid(0);
   leaseTid(0);
   m_instMap.unbind_all();
@@ -30,6 +31,11 @@ DhcpServerUser::~DhcpServerUser()
     m_instMap.unbind(cha);
     delete inst;
   }
+}
+
+CPGateway &DhcpServerUser::cpGw(void)
+{
+  return(*m_cpGw);
 }
 
 ACE_UINT8 DhcpServerUser::isSubscriberFound(ACE_CString macAddress)
@@ -71,6 +77,11 @@ DHCP::Server *DhcpServerUser::getSubscriber(ACE_CString macAddress)
   }
 
   return(sess);
+}
+
+int DhcpServerUser::sendResponse(ACE_CString cha, ACE_Byte *in, ACE_UINT32 inLen)
+{
+  return(cpGw().sendResponse(cha, in, inLen));
 }
 
 ACE_UINT32 DhcpServerUser::processRequest(ACE_Byte *in, ACE_UINT32 inLen)

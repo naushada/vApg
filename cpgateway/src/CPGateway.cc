@@ -53,6 +53,40 @@ DhcpServerUser &CPGateway::getDhcpServerUser(void)
   return(*m_dhcpUser);
 }
 
+int CPGateway::sendResponse(ACE_CString chaddr, ACE_Byte *in, ACE_UINT32 inLen)
+{
+  struct sockaddr_ll sa;
+  int sentLen = -1;
+  ACE_UINT16 offset = 0;
+  socklen_t addrLen = sizeof(sa);
+
+  ACE_OS::memset((void *)&sa, 0, sizeof(sa));
+
+  sa.sll_family = AF_PACKET;
+  sa.sll_protocol = htons(TransportIF::ETH_P_ALL);
+  sa.sll_ifindex = get_index();
+  sa.sll_halen = TransportIF::ETH_ALEN;
+
+  ACE_OS::memcpy((void *)sa.sll_addr, (void *)chaddr.c_str(), TransportIF::ETH_ALEN);
+
+  do
+  {
+    sentLen = sendto(handle(), (const char *)&in[offset],
+                     (inLen - offset),0, (struct sockaddr *)&sa,
+                     addrLen);
+    if(sentLen > 0)
+    {
+      offset += sentLen;
+      if(!(inLen -offset))
+      {
+        sentLen = 0;
+      }
+    }
+  }while((sentLen == -1) && (errno == EINTR));
+
+  return(sentLen);
+}
+
 int CPGateway::handle_input(ACE_HANDLE fd)
 {
   ACE_TRACE("CPGateway::handle_input\n");
@@ -73,10 +107,19 @@ int CPGateway::handle_input(ACE_HANDLE fd)
   /*Update the length od data in m_mb*/
   m_mb->wr_ptr(len);
 
+  char *dd = m_mb->rd_ptr();
+  for(int idx = 0; idx < len; idx++)
+  {
+    if(!(idx%16))
+      ACE_DEBUG((LM_DEBUG, "\n"));
+
+    ACE_DEBUG((LM_DEBUG, "%0.2X ", dd[idx]));
+  }
+
+  ACE_DEBUG((LM_DEBUG, "%I CPGateway length %u\n", len));
   /*Check wheather CPGateway is administrative locked/error state.*/
   getState().processRequest(*this, (ACE_Byte *)m_mb->rd_ptr(), m_mb->length());
 
-  ACE_DEBUG((LM_INFO, "%I CPGateway state is locked/error state\n"));
   return(0);
 }
 
@@ -86,7 +129,7 @@ ACE_INT32 CPGateway::get_index(void)
   struct ifreq ifr;
   ACE_INT32 retStatus = CommonIF::FAILURE;
 
-  ACE_TRACE("CPGateway::get_index");
+  ACE_TRACE("CPGateway::get_index\n");
 
   do
   {
@@ -110,6 +153,20 @@ ACE_INT32 CPGateway::get_index(void)
     }
 
     m_macAddress.set(ifr.ifr_addr.sa_data, TransportIF::ETH_ALEN, 1);
+
+    ACE_DEBUG((LM_ERROR, "sa_data[0] 0x%X ", ifr.ifr_addr.sa_data[0] & 0xFF));
+    ACE_DEBUG((LM_ERROR, "sa_data[1] 0x%X ", ifr.ifr_addr.sa_data[1] & 0xFF));
+    ACE_DEBUG((LM_ERROR, "sa_data[2] 0x%X ", ifr.ifr_addr.sa_data[2] & 0xFF));
+    ACE_DEBUG((LM_ERROR, "sa_data[3] 0x%X ", ifr.ifr_addr.sa_data[3] & 0xFF));
+    ACE_DEBUG((LM_ERROR, "sa_data[4] 0x%X ", ifr.ifr_addr.sa_data[4] & 0xFF));
+    ACE_DEBUG((LM_ERROR, "sa_data[5] 0x%X\n",ifr.ifr_addr.sa_data[5] & 0xFF));
+
+    ACE_DEBUG((LM_DEBUG, "The MAC[0] 0x%0.2X ", m_macAddress.c_str()[0] & 0xFF));
+    ACE_DEBUG((LM_DEBUG, "The MAC[1] 0x%0.2X ", m_macAddress.c_str()[1] & 0xFF));
+    ACE_DEBUG((LM_DEBUG, "The MAC[2] 0x%0.2X ", m_macAddress.c_str()[2] & 0xFF));
+    ACE_DEBUG((LM_DEBUG, "The MAC[3] 0x%0.2X ", m_macAddress.c_str()[3] & 0xFF));
+    ACE_DEBUG((LM_DEBUG, "The MAC[4] 0x%0.2X ", m_macAddress.c_str()[4] & 0xFF));
+    ACE_DEBUG((LM_DEBUG, "The MAC[5] 0x%0.2X\n", m_macAddress.c_str()[5] & 0xFF));
 
     if(ACE_OS::ioctl(handle, SIOCGIFINDEX, &ifr) < 0)
     {
@@ -148,10 +205,11 @@ ACE_INT32 CPGateway::open(void)
     ACE_OS::setsockopt(handle, SOL_SOCKET, TCP_NODELAY, &option, sizeof(option));
     ACE_OS::setsockopt(handle, SOL_SOCKET, SO_BROADCAST, &option, sizeof(option));
     ACE_OS::memset((void *)&ifr, 0, sizeof(ifr));
+    ACE_OS::strncpy(ifr.ifr_name, m_ethInterface.c_str(), (IFNAMSIZ - 1));
 
     if(ACE_OS::ioctl(handle, SIOCGIFFLAGS, &ifr) < 0)
     {
-      ACE_ERROR((LM_ERROR, "%IRetrieval of IFFLAG flaied for handle %d\n", handle));
+      ACE_ERROR((LM_ERROR, "%IRetrieval of IFFLAG failed for handle %d intfName %s\n", handle, ifr.ifr_name));
       ACE_OS::close(handle);
       break;
     }
@@ -212,12 +270,13 @@ ACE_HANDLE CPGateway::get_handle() const
   return(const_cast<CPGateway *>(this)->handle());
 }
 
-CPGateway::CPGateway(ACE_CString intfName, ACE_CString ipAddr,
+CPGateway::CPGateway(ACE_CString intfName, ACE_CString ip,
                      ACE_UINT8 entity, ACE_UINT8 instance,
                      ACE_CString nodeTag)
 {
   ACE_TRACE("CPGateway::CPGateway\n");
-  m_ethInterface = intfName;
+  ethIntfName(intfName);
+  ipAddr(ip);
 
   ACE_NEW_NORETURN(m_dhcpUser, DhcpServerUser(this));
   /*Mske CPGateway state machine Activated State.*/
@@ -235,6 +294,8 @@ CPGateway::CPGateway(ACE_CString intfName)
 
   m_ethInterface = intfName;
 
+  ACE_NEW_NORETURN(m_dhcpUser, DhcpServerUser(this));
+
   if(open() < 0)
   {
     ACE_ERROR((LM_ERROR, "%Iopen for ethernet Interface %s failed\n", intfName.c_str()));
@@ -248,6 +309,16 @@ CPGateway::~CPGateway()
 {
   ACE_TRACE("CPGateway::~CPGateway\n");
   delete m_dhcpUser;
+}
+
+void CPGateway::ipAddr(ACE_CString ip)
+{
+  m_ipAddress = ip;
+}
+
+void CPGateway::ethIntfName(ACE_CString eth)
+{
+  m_ethInterface = eth;
 }
 
 ACE_UINT8 CPGateway::start()
@@ -284,10 +355,13 @@ int main(int argc, char *argv[])
    * argv[4] = nodeName
    * */
   CPGateway *cp = NULL;
-  ACE_NEW_NORETURN(cp, CPGateway(argv[0], argv[1],
-                                 ACE_OS::atoi(argv[2]),
+  ACE_CString ipStr((const char *)argv[2]);
+  ACE_CString nTag((const char *)argv[5]);
+
+  ACE_NEW_NORETURN(cp, CPGateway(argv[1], ipStr,
                                  ACE_OS::atoi(argv[3]),
-                                 argv[4]));
+                                 ACE_OS::atoi(argv[4]),
+                                 nTag));
 
   if(!cp->start())
   {
