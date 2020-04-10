@@ -67,6 +67,24 @@ ACE_UINT32 CPGatewayState::processRequest(CPGateway &parent,
       /*TCP Packet*/
     }
   }
+  else if(TransportIF::ETH_P_ARP == ntohs(ethHdr->proto))
+  {
+    /*ARP Packet for MAC resolve.*/
+  }
+  else if(TransportIF::ETH_P_EAPOL == ntohs(ethHdr->proto))
+  {
+    /*EAP Over Lan - First Authnticate and the Assign IP address.*/
+  }
+  else if(TransportIF::ETH_P_PPP == ntohs(ethHdr->proto))
+  {
+  }
+  else if(TransportIF::ETH_P_8021Q == ntohs(ethHdr->proto))
+  {
+  }
+  else if(ntohs(ethHdr->proto) <= 1500)
+  {
+    /*802.3 llc frame.*/
+  }
 
   return(0);
 }
