@@ -53,6 +53,8 @@ class CPGateway : public ACE_Event_Handler
     int sendResponse(ACE_CString chaddr, ACE_Byte *in, ACE_UINT32 inLen);
     void ipAddr(ACE_CString ip);
     void ethIntfName(ACE_CString eth);
+
+    ACE_CString &getMacAddress(void);
 };
 
 #endif /*__CPGATEWAY_H__*/

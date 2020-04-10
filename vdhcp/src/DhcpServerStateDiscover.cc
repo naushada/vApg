@@ -34,6 +34,7 @@ DhcpServerStateDiscover::~DhcpServerStateDiscover()
 {
   ACE_TRACE("DhcpServerStateDiscover::~DhcpServerStateDiscover\n");
   delete m_instance;
+  m_instance = NULL;
 }
 
 void DhcpServerStateDiscover::onEntry(DHCP::Server &parent)
@@ -85,6 +86,7 @@ ACE_UINT32 DhcpServerStateDiscover::discover(DHCP::Server &parent, ACE_Byte *inP
 
   /*Prelare DHCP Offer Message .*/
   ACE_Message_Block &mb = buildResponse(parent, inPtr, inLen);
+
   ACE_CString cha((const char *)parent.ctx().chaddr());
   parent.getDhcpServerUser().sendResponse(cha, (ACE_Byte *)mb.rd_ptr(), mb.length());
 

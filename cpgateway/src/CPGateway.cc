@@ -278,14 +278,15 @@ CPGateway::CPGateway(ACE_CString intfName, ACE_CString ip,
   ethIntfName(intfName);
   ipAddr(ip);
 
-  ACE_NEW_NORETURN(m_dhcpUser, DhcpServerUser(this));
-  /*Mske CPGateway state machine Activated State.*/
-  setState(CPGatewayStateActivated::instance());
 
   if(open() < 0)
   {
     ACE_ERROR((LM_ERROR, "%Iopen for ethernet Interface %s failed\n", intfName.c_str()));
   }
+
+  ACE_NEW_NORETURN(m_dhcpUser, DhcpServerUser(this));
+  /*Mske CPGateway state machine Activated State.*/
+  setState(CPGatewayStateActivated::instance());
 }
 
 CPGateway::CPGateway(ACE_CString intfName)
@@ -319,6 +320,11 @@ void CPGateway::ipAddr(ACE_CString ip)
 void CPGateway::ethIntfName(ACE_CString eth)
 {
   m_ethInterface = eth;
+}
+
+ACE_CString &CPGateway::getMacAddress(void)
+{
+  return(m_macAddress);
 }
 
 ACE_UINT8 CPGateway::start()

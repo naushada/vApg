@@ -10,6 +10,15 @@
 #include "commonIF.h"
 #include "DhcpServer.h"
 
+#include "DhcpServerStateDecline.h"
+#include "DhcpServerStateDiscover.h"
+#include "DhcpServerStateInit.h"
+#include "DhcpServerStateIPAllocated.h"
+#include "DhcpServerStateLeaseExpire.h"
+#include "DhcpServerStateRelease.h"
+#include "DhcpServerStateRequest.h"
+#include "DhcpServerStateRequestAck.h"
+
 DhcpServerUser::DhcpServerUser(CPGateway *parent)
 {
   m_cpGw = parent;
@@ -86,24 +95,29 @@ int DhcpServerUser::sendResponse(ACE_CString cha, ACE_Byte *in, ACE_UINT32 inLen
 
 ACE_UINT32 DhcpServerUser::processRequest(ACE_Byte *in, ACE_UINT32 inLen)
 {
-   /*This is a DHCP Message.*/
    TransportIF::DHCP *dhcpHdr = (TransportIF::DHCP *)&in[sizeof(TransportIF::ETH) +
                                                          sizeof(TransportIF::IP) +
                                                          sizeof(TransportIF::UDP)];
 
    ACE_CString haddr((const char *)dhcpHdr->chaddr, TransportIF::ETH_ALEN);
-   ACE_DEBUG((LM_DEBUG, "%I chaddr is %s\n", haddr.c_str()));
+
+   ACE_DEBUG((LM_DEBUG, "%I chaddr[0] %x:",  haddr.c_str()[0] & 0xFF));
+   ACE_DEBUG((LM_DEBUG, "%I chaddr[1] %x:",  haddr.c_str()[1] & 0xFF));
+   ACE_DEBUG((LM_DEBUG, "%I chaddr[2] %x:",  haddr.c_str()[2] & 0xFF));
+   ACE_DEBUG((LM_DEBUG, "%I chaddr[3] %x:",  haddr.c_str()[3] & 0xFF));
+   ACE_DEBUG((LM_DEBUG, "%I chaddr[4] %x:",  haddr.c_str()[4] & 0xFF));
+   ACE_DEBUG((LM_DEBUG, "%I chaddr[5] %x\n", haddr.c_str()[5] & 0xFF));
 
    if(isSubscriberFound(haddr))
    {
-     ACE_DEBUG((LM_INFO, "%I chaddr (%s) is found\n", haddr.c_str()));
+     ACE_DEBUG((LM_INFO, "%I subscriber is found\n"));
      DHCP::Server *sess = getSubscriber(haddr);
      sess->getState().rx(*sess, in, inLen);
    }
    else
    {
      DHCP::Server *sess = NULL;
-     ACE_NEW_NORETURN(sess, DHCP::Server(this));
+     ACE_NEW_NORETURN(sess, DHCP::Server(this, cpGw().getMacAddress()));
 
      addSubscriber(sess, haddr);
      sess->getState().rx(*sess, in, inLen);
@@ -192,15 +206,31 @@ ACE_INT32 DhcpServerUser::process_timeout(const void *act)
       /*Kick the state machine.*/
       sess->getState().guardTimerExpiry(*sess, (const void *)act);
       m_instMap.unbind(cha);
+
+      /*re-claim the heap memory now.*/
+      delete DhcpServerStateDiscover::instance();
+      delete DhcpServerStateInit::instance();
+      delete DhcpServerStateLeaseExpire::instance();
+      delete DhcpServerStateRelease::instance();
+      delete DhcpServerStateRequest::instance();
       delete sess;
       break;
+
     case DHCP::LEASE_GUARD_TIMER_ID:
       ACE_DEBUG((LM_DEBUG, "LEASE_GUARD_TIMER_ID is expired\n"));
       /*Kick the state machine.*/
       sess->getState().leaseTimerExpiry(*sess, (const void *)act);
       m_instMap.unbind(cha);
+
+      /*re-claim the heap memory now.*/
+      delete DhcpServerStateDiscover::instance();
+      delete DhcpServerStateInit::instance();
+      delete DhcpServerStateLeaseExpire::instance();
+      delete DhcpServerStateRelease::instance();
+      delete DhcpServerStateRequest::instance();
       delete sess;
       break;
+
     default:
       break;
     }

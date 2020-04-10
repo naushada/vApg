@@ -79,11 +79,13 @@ DhcpServerStateLeaseExpire::~DhcpServerStateLeaseExpire()
 {
   ACE_TRACE("DhcpServerStateLeaseExpire::~DhcpServerStateLeaseExpire\n");
   delete m_instance;
+  m_instance = NULL;
 }
 
 ACE_UINT32 DhcpServerStateLeaseExpire::release(DHCP::Server &parent,ACE_Byte *in, ACE_UINT32 inLen)
 {
   ACE_TRACE("DhcpServerStateLeaseExpire::release\n");
+  /*just kick the state machine so that, a timer is started.*/
   parent.setState(DhcpServerStateRelease::instance());
 
   return(0);

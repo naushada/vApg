@@ -43,10 +43,11 @@ namespace DHCP
     DhcpServerUser *m_dhcpServerUser;
     ACE_UINT32 m_lease;
     ACE_CString m_sname;
+    ACE_CString m_macAddress;
 
   public:
     Server();
-    Server(DhcpServerUser *user);
+    Server(DhcpServerUser *user, ACE_CString mac);
     virtual ~Server();
 
     void setState(DhcpServerState *st);
@@ -68,6 +69,9 @@ namespace DHCP
 
     DhcpServerUser &getDhcpServerUser(void);
     void setDhcpServerUser(DhcpServerUser *usr);
+
+    ACE_CString &getMacAddress(void);
+    void setMacAddress(ACE_CString mac);
   };
 }
 

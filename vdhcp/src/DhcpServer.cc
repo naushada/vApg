@@ -10,10 +10,11 @@
 #include "DhcpServer.h"
 #include "DhcpServerStateDiscover.h"
 
-DHCP::Server::Server(DhcpServerUser *usr)
+DHCP::Server::Server(DhcpServerUser *usr, ACE_CString mac)
 {
   m_dhcpServerUser = usr;
 
+  setMacAddress(mac);
   /*context of DHCP Client's dhcp-header.*/
   m_ctx = new RFC2131::DhcpCtx();
 
@@ -135,4 +136,15 @@ void DHCP::Server::sname(ACE_CString &sn)
 {
   m_sname = sn;
 }
+
+ACE_CString &DHCP::Server::getMacAddress(void)
+{
+  return(m_macAddress);
+}
+
+void DHCP::Server::setMacAddress(ACE_CString mac)
+{
+  m_macAddress = mac;
+}
+
 #endif /*__DHCP_SERVER_CC__*/

@@ -31,6 +31,7 @@ DhcpServerStateInit::~DhcpServerStateInit()
 {
   ACE_TRACE("DhcpServerStateInit::~DhcpServerStateInit\n");
   delete m_instance;
+  m_instance = NULL;
 }
 
 void DhcpServerStateInit::onEntry(DHCP::Server &parent)

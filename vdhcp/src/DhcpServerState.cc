@@ -1,8 +1,8 @@
 #ifndef __DHCP_SERVER_STATE_CC__
 #define __DHCP_SERVER_STATE_CC__
 
-//#include "commonIF.h"
 #include "ace/Log_Msg.h"
+
 #include "DhcpServerState.h"
 #include "DhcpCommon.h"
 #include "DhcpServer.h"
@@ -158,7 +158,6 @@ ACE_UINT16 DhcpServerState::chksumUDP(TransportIF::IP *ip)
 ACE_Message_Block &DhcpServerState::buildResponse(DHCP::Server &parent, ACE_Byte *in, ACE_UINT32 len)
 {
   ACE_Message_Block *mb = NULL;
-  ACE_Byte bmac[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
   ACE_UINT32 offset = 0;
   ACE_Byte *rsp = NULL;
 
@@ -177,8 +176,12 @@ ACE_Message_Block &DhcpServerState::buildResponse(DHCP::Server &parent, ACE_Byte
                                                       sizeof(TransportIF::UDP)];
 
   /*Populating Ethernet Header.*/
-  ACE_OS::memcpy((void *)eth->src, (const void *)in, TransportIF::ETH_ALEN);
+  ACE_OS::memcpy((void *)eth->src,
+                 (const void *)parent.getMacAddress().c_str() ,
+                 TransportIF::ETH_ALEN);
+
   ACE_OS::memcpy((void *)eth->dest, (const void *)&in[TransportIF::ETH_ALEN], TransportIF::ETH_ALEN);
+
   eth->proto = htons(TransportIF::ETH_P_IP);
 
   /*Populating IP Header.*/
@@ -392,7 +395,7 @@ ACE_Message_Block &DhcpServerState::buildResponse(DHCP::Server &parent, ACE_Byte
 
   rsp[offset++] = RFC2131::OPTION_IP_LEASE_TIME;
   rsp[offset++] = 4;
-  *((ACE_UINT32 *)&rsp[offset]) = htonl(0x00);
+  *((ACE_UINT32 *)&rsp[offset]) = htonl(parent.lease());
   offset += 4;
 
   rsp[offset++] = RFC2131::OPTION_MTU;
@@ -440,7 +443,7 @@ ACE_UINT32 DhcpServerState::populateDhcpOption(DHCP::Server &parent, ACE_Byte *d
       RFC2131::DhcpOption *elm = NULL;
       ACE_UINT8 tag = dhcpOption[offset];
 
-      if(parent.optionMap().find(tag, elm) != -1)
+      if(parent.optionMap().find(tag, elm) == -1)
       {
         /*Not found in the MAP.*/
         ACE_NEW_NORETURN(elm, RFC2131::DhcpOption());
@@ -482,6 +485,7 @@ ACE_UINT32 DhcpServerState::populateDhcpHeader(DHCP::Server &parent, TransportIF
   parent.ctx().chaddrLen(dhcpHeader->hlen);
   parent.ctx().chaddr(dhcpHeader->chaddr);
 
+  /*dhcp client's host name.*/
   parent.ctx().sname(dhcpHeader->sname);
 
   return(0);
@@ -493,8 +497,9 @@ ACE_UINT32 DhcpServerState::rx(DHCP::Server &parent, ACE_Byte *in, ACE_UINT32 in
   ACE_TRACE("DhcpServerState::rx\n");
 
   TransportIF::DHCP *dhcpHdr = (TransportIF::DHCP *)&in[sizeof(TransportIF::ETH) +
-                                                        sizeof(TransportIF::IP) +
+                                                        sizeof(TransportIF::IP)  +
                                                         sizeof(TransportIF::UDP)];
+  /*populate dhcp header into internal Context.*/
   populateDhcpHeader(parent, dhcpHdr);
 
   TransportIF::UDP *udpHdr = (TransportIF::UDP *)&in[sizeof(TransportIF::ETH) +
@@ -509,6 +514,7 @@ ACE_UINT32 DhcpServerState::rx(DHCP::Server &parent, ACE_Byte *in, ACE_UINT32 in
                                          sizeof(TransportIF::DHCP) +
                                          4/*Dhcp Cookies*/];
 
+  /*populate dhcp option into Hash Map.*/
   populateDhcpOption(parent, dhcpOption, dhcpOptionLen);
 
   ACE_UINT8 msgType = 0;

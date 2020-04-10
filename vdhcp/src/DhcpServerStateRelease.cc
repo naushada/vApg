@@ -29,6 +29,8 @@ DhcpServerStateRelease::DhcpServerStateRelease()
 DhcpServerStateRelease::~DhcpServerStateRelease()
 {
   ACE_TRACE("DhcpServerStateRelease::~DhcpServerStateRelease\n");
+  delete m_instance;
+  m_instance = NULL;
 }
 
 void DhcpServerStateRelease::onEntry(DHCP::Server &parent)
@@ -43,7 +45,7 @@ void DhcpServerStateRelease::onEntry(DHCP::Server &parent)
   ACE_OS::memcpy((void *)act->chaddr(), (const void *)parent.ctx().chaddr(),
                  parent.ctx().chaddrLen());
 
-  /*Start a timer of 2seconds*/
+  /*Start a timer of 1seconds*/
   parent.getDhcpServerUser().guardTid(parent.getDhcpServerUser().start_timer(to, (const void *)act));
 }
 
