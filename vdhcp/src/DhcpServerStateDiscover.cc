@@ -1,6 +1,7 @@
 #ifndef __DHCP_SERVER_STATE_DISCOVER_CC__
 #define __DHCP_SERVER_STATE_DISCOVER_CC__
 
+#include "DhcpServerStateLeaseExpire.h"
 #include "DhcpServerUser.h"
 #include "DhcpServerStateDiscover.h"
 #include "DhcpServer.h"
@@ -51,9 +52,18 @@ ACE_UINT32 DhcpServerStateDiscover::offer(DHCP::Server &parent, ACE_Byte *inPtr,
   return(0);
 }
 
-ACE_UINT32 DhcpServerStateDiscover::request(DHCP::Server &parent, ACE_Byte *inPtr, ACE_UINT32 inLen)
+ACE_UINT32 DhcpServerStateDiscover::request(DHCP::Server &parent, ACE_Byte *in, ACE_UINT32 inLen)
 {
-  ACE_TRACE("DhcpServerStateDiscover::offer\n");
+  ACE_TRACE("DhcpServerStateDiscover::request\n");
+  /*Prepare Request ACK.*/
+  ACE_Message_Block &mb = buildResponse(parent, in, inLen);
+
+  ACE_CString cha((const char *)parent.ctx().chaddr());
+  parent.getDhcpServerUser().sendResponse(cha, (ACE_Byte *)mb.rd_ptr(), mb.length());
+
+  /*start the leaseTimer again by kicking the state machine.*/
+  parent.setState(DhcpServerStateLeaseExpire::instance());
+
   return(0);
 }
 

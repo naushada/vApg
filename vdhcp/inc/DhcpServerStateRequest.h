@@ -16,6 +16,7 @@ public:
   void onEntry(DHCP::Server &parent);
   void onExit(DHCP::Server &parent);
 
+  ACE_UINT32 release(DHCP::Server &parent, ACE_Byte *in, ACE_UINT32 inLen);
   ACE_UINT32 offer(DHCP::Server &parent, ACE_Byte *in, ACE_UINT32 inLen);
   ACE_UINT32 discover(DHCP::Server &parent, ACE_Byte *in, ACE_UINT32 inLen);
   ACE_UINT32 request(DHCP::Server &parent, ACE_Byte *in, ACE_UINT32 inLen);

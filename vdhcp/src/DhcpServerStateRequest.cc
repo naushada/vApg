@@ -1,6 +1,7 @@
 #ifndef __DHCP_SERVER_STATE_REQUEST_CC__
 #define __DHCP_SERVER_STATE_REQUEST_CC__
 
+#include "DhcpServerStateRelease.h"
 #include "DhcpServerStateLeaseExpire.h"
 #include "DhcpServerStateRequest.h"
 #include "DhcpServer.h"
@@ -53,6 +54,7 @@ void DhcpServerStateRequest::onEntry(DHCP::Server &parent)
 void DhcpServerStateRequest::onExit(DHCP::Server &parent)
 {
   ACE_TRACE("DhcpServerStateRequest::onExit\n");
+  parent.getDhcpServerUser().stop_timer(parent.getDhcpServerUser().guardTid());
 }
 
 ACE_UINT32 DhcpServerStateRequest::offer(DHCP::Server &parent, ACE_Byte *in, ACE_UINT32 inLen)
@@ -96,6 +98,15 @@ ACE_UINT32 DhcpServerStateRequest::leaseTO(DHCP::Server &parent, ACE_Byte *in, A
   return(0);
 }
 
+ACE_UINT32 DhcpServerStateRequest::release(DHCP::Server &parent,ACE_Byte *in, ACE_UINT32 inLen)
+{
+  ACE_TRACE("DhcpServerStateRequest::release\n");
+  /*stop leaseExpiry Timer now.*/
+  parent.getDhcpServerUser().stop_timer(parent.getDhcpServerUser().leaseTid());
+  parent.setState(DhcpServerStateRelease::instance());
+
+  return(0);
+}
 /*Guard Timer is stared if next request is expected to complete the Flow.*/
 ACE_UINT32 DhcpServerStateRequest::guardTimerExpiry(DHCP::Server &parent, const void *act)
 {

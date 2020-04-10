@@ -41,6 +41,8 @@ namespace DHCP
     RFC2131::DhcpCtx *m_ctx;
     ElemDef m_optionMap;
     DhcpServerUser *m_dhcpServerUser;
+    ACE_UINT32 m_lease;
+    ACE_CString m_sname;
 
   public:
     Server();
@@ -52,6 +54,12 @@ namespace DHCP
 
     ACE_UINT32 start();
     ACE_UINT32 stop();
+
+    void lease(ACE_UINT32 to);
+    ACE_UINT32 lease(void);
+
+    ACE_CString &sname(void);
+    void sname(ACE_CString &sname);
 
     void xid(ACE_UINT32 xid);
     ACE_UINT32 xid(void);

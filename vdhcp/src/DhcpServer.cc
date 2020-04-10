@@ -115,4 +115,24 @@ void DHCP::Server::setDhcpServerUser(DhcpServerUser *usr)
   m_dhcpServerUser = usr;
 }
 
+void DHCP::Server::lease(ACE_UINT32 to)
+{
+  /*lease is in hour unit.*/
+  m_lease = to * 60 * 60;
+}
+
+ACE_UINT32 DHCP::Server::lease(void)
+{
+  return(m_lease);
+}
+
+ACE_CString &DHCP::Server::sname(void)
+{
+  return(m_sname);
+}
+
+void DHCP::Server::sname(ACE_CString &sn)
+{
+  m_sname = sn;
+}
 #endif /*__DHCP_SERVER_CC__*/
