@@ -17,7 +17,7 @@ DhcpServerStateDiscover *DhcpServerStateDiscover::instance()
 
   if(!m_instance)
   {
-    m_instance = new DhcpServerStateDiscover();
+    ACE_NEW_NORETURN(m_instance, DhcpServerStateDiscover());
   }
 
   return(m_instance);

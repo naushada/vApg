@@ -51,7 +51,12 @@ ACE_UINT8 DhcpServerUser::isSubscriberFound(ACE_CString macAddress)
 {
   if(m_instMap.find(macAddress) == -1)
   {
-    ACE_DEBUG((LM_ERROR, "This client %s is not found\n", macAddress.c_str()));
+    ACE_DEBUG((LM_ERROR, "This client %X:",  macAddress.c_str()[0] & 0xFF));
+    ACE_DEBUG((LM_ERROR, "%X:",  macAddress.c_str()[1] & 0xFF));
+    ACE_DEBUG((LM_ERROR, "%X:",  macAddress.c_str()[2] & 0xFF));
+    ACE_DEBUG((LM_ERROR, "%X:",  macAddress.c_str()[3] & 0xFF));
+    ACE_DEBUG((LM_ERROR, "%X:",  macAddress.c_str()[4] & 0xFF));
+    ACE_DEBUG((LM_ERROR, "%X not found\n", macAddress.c_str()[5] & 0xFF));
     return(0);
   }
 
@@ -63,7 +68,7 @@ ACE_UINT8 DhcpServerUser::createSubscriber(ACE_CString macAddress)
 
   DHCP::Server *sess = NULL;
   ACE_NEW_NORETURN(sess, DHCP::Server());
-  /*let STL do the memory management for stack object.*/
+
   m_instMap.bind(macAddress, sess);
 
   return(0);
@@ -101,12 +106,12 @@ ACE_UINT32 DhcpServerUser::processRequest(ACE_Byte *in, ACE_UINT32 inLen)
 
    ACE_CString haddr((const char *)dhcpHdr->chaddr, TransportIF::ETH_ALEN);
 
-   ACE_DEBUG((LM_DEBUG, "%I chaddr[0] %x:",  haddr.c_str()[0] & 0xFF));
-   ACE_DEBUG((LM_DEBUG, "%I chaddr[1] %x:",  haddr.c_str()[1] & 0xFF));
-   ACE_DEBUG((LM_DEBUG, "%I chaddr[2] %x:",  haddr.c_str()[2] & 0xFF));
-   ACE_DEBUG((LM_DEBUG, "%I chaddr[3] %x:",  haddr.c_str()[3] & 0xFF));
-   ACE_DEBUG((LM_DEBUG, "%I chaddr[4] %x:",  haddr.c_str()[4] & 0xFF));
-   ACE_DEBUG((LM_DEBUG, "%I chaddr[5] %x\n", haddr.c_str()[5] & 0xFF));
+   ACE_DEBUG((LM_DEBUG, "chaddr %X:",  haddr.c_str()[0] & 0xFF));
+   ACE_DEBUG((LM_DEBUG, "%X:",  haddr.c_str()[1] & 0xFF));
+   ACE_DEBUG((LM_DEBUG, "%X:",  haddr.c_str()[2] & 0xFF));
+   ACE_DEBUG((LM_DEBUG, "%X:",  haddr.c_str()[3] & 0xFF));
+   ACE_DEBUG((LM_DEBUG, "%X:",  haddr.c_str()[4] & 0xFF));
+   ACE_DEBUG((LM_DEBUG, "%X\n", haddr.c_str()[5] & 0xFF));
 
    if(isSubscriberFound(haddr))
    {
@@ -235,6 +240,7 @@ ACE_INT32 DhcpServerUser::process_timeout(const void *act)
       break;
     }
   }
+
   return(0);
 }
 

@@ -15,7 +15,7 @@ DhcpServerStateLeaseExpire *DhcpServerStateLeaseExpire::instance()
   ACE_TRACE("DhcpServerStateLeaseExpire::instance");
   if(!m_instance)
   {
-    m_instance = new DhcpServerStateLeaseExpire();
+    ACE_NEW_NORETURN(m_instance, DhcpServerStateLeaseExpire());
   }
 
   return(m_instance);

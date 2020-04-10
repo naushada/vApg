@@ -15,7 +15,7 @@ DhcpServerStateRequest *DhcpServerStateRequest::instance()
   ACE_TRACE("DhcpServerStateRequest::instance\n");
   if(!m_instance)
   {
-    m_instance = new DhcpServerStateRequest();
+    ACE_NEW_NORETURN(m_instance, DhcpServerStateRequest());
   }
 
   return(m_instance);

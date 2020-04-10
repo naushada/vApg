@@ -14,7 +14,7 @@ DhcpServerStateInit *DhcpServerStateInit::instance()
 
   if(!m_instance)
   {
-    m_instance = new DhcpServerStateInit();
+    ACE_NEW_NORETURN(m_instance, DhcpServerStateInit());
   }
 
   return(m_instance);
